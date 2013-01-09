@@ -1,1 +1,4 @@
 
+[submodule "activitystreams-unofficial"]
+	path = activitystreams-unofficial
+	url = git@github.com:snarfed/activitystreams-unofficial
