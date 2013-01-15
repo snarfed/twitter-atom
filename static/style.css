@@ -3,6 +3,7 @@ body {
   background-color: white;
   color: black;
   margin: 1em;
+  margin-top: 2em;
 }
 
 body, input, textarea {
