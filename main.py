@@ -25,7 +25,10 @@ GENERATED_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                        'templates', 'generated.html')
 ATOM_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                   'activitystreams', 'templates', 'user_feed.atom')
-API_HOME_URL = 'https://graph.facebook.com/me?fields=home&access_token=%s'
+
+API_HOME_URL = (
+  'https://graph.facebook.com/me?access_token=%s&fields='
+  'home,id,username,name,link,updated_time,bio,location')
 API_HOME_COUNT = 25  # default number of posts returned
 
 # based on salmon-unofficial/facebook.py.
@@ -113,16 +116,19 @@ class AtomHandler(webapp2.RequestHandler):
   def get(self):
     access_token = self.request.get('access_token')
     assert access_token
-    resp = util.urlfetch(API_HOME_URL % access_token)
+    resp = json.loads(util.urlfetch(API_HOME_URL % access_token))
 
-    posts = json.loads(resp).get('home', {}).get('data', [])
     fb = facebook.Facebook(self)
+    actor = fb.user_to_actor(resp)
+    posts = resp.get('home', {}).get('data', [])
     activities = [fb.post_to_activity(p) for p in posts]
 
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(
         ATOM_TEMPLATE_FILE,
-        {'user': {'displayName': 'Facebook'},
+        {'title': 'Facebook news feed for %s' % actor['displayName'],
+         'updated': activities[0]['object'].get('updated') if activities else '',
+         'actor': actor,
          'items': activities,
          'request_url': self.request.path_url,
          }))
