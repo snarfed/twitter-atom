@@ -133,8 +133,7 @@ class AtomHandler(webapp2.RequestHandler):
 
 application = webapp2.WSGIApplication(
   [('/generate', GenerateHandler),
-    ('/got_auth_code', GotAuthCode),
-    # ('/got_access_token', GotAccessToken),
+   ('/got_auth_code', GotAuthCode),
    ('/atom', AtomHandler),
    ],
   debug=appengine_config.DEBUG)
