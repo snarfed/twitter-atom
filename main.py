@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """An App Engine app that provides "private" Atom feeds for your Twitter news
-feed, ie posts from your friends.
+feed, ie tweets from people you follow.
 
 Based on both plusstreamfeed and salmon-unofficial.
 """
