@@ -1,11 +1,11 @@
 #!/usr/bin/python
-"""An App Engine app that provides "private" Atom feeds for your Facebook news
+"""An App Engine app that provides "private" Atom feeds for your Twitter news
 feed, ie posts from your friends.
 
 Based on both plusstreamfeed and salmon-unofficial.
 """
 
-__author__ = 'Ryan Barrett <facebook-atom@ryanb.org>'
+__author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
 
 import json
 import logging
@@ -14,7 +14,7 @@ import urllib
 import urlparse
 
 import appengine_config
-from activitystreams import facebook
+from activitystreams import twitter
 from activitystreams.webutil import util
 from activitystreams.webutil import webapp2
 
@@ -27,16 +27,16 @@ ATOM_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                   'activitystreams', 'templates', 'user_feed.atom')
 
 API_HOME_URL = (
-  'https://graph.facebook.com/me?access_token=%s&fields='
+  'https://graph.twitter.com/me?access_token=%s&fields='
   'home,id,username,name,link,updated_time,bio,location')
 API_HOME_COUNT = 25  # default number of posts returned
 
-# based on salmon-unofficial/facebook.py.
-# facebook api url templates. can't (easily) use urllib.urlencode() because i
+# based on salmon-unofficial/twitter.py.
+# twitter api url templates. can't (easily) use urllib.urlencode() because i
 # want to keep the %(...)s placeholders as is and fill them in later in code.
-# TODO: use appengine_config.py for local mockfacebook vs prod facebook
+# TODO: use appengine_config.py for local mocktwitter vs prod twitter
 GET_AUTH_CODE_URL = '&'.join((
-    'https://www.facebook.com/dialog/oauth/?scope=read_stream,offline_access',
+    'https://www.twitter.com/dialog/oauth/?scope=read_stream,offline_access',
     'client_id=%(client_id)s',
     # redirect_uri here must be the same in the access token request!
     'redirect_uri=%(host_url)s/got_auth_code',
@@ -45,7 +45,7 @@ GET_AUTH_CODE_URL = '&'.join((
     ))
 
 GET_ACCESS_TOKEN_URL = '&'.join((
-    'https://graph.facebook.com/oauth/access_token?client_id=%(client_id)s',
+    'https://graph.twitter.com/oauth/access_token?client_id=%(client_id)s',
     # redirect_uri here must be the same in the oauth request!
     # (the value here doesn't actually matter since it's requested server side.)
     'redirect_uri=%(host_url)s/got_auth_code',
@@ -57,21 +57,21 @@ GET_ACCESS_TOKEN_URL = '&'.join((
 class GenerateHandler(webapp2.RequestHandler):
   """Registers the current user and generates a feed URL for their stream.
 
-  Based on AddFacebook in salmon-unofficial/facebook.py.
+  Based on AddTwitter in salmon-unofficial/twitter.py.
   """
 
   def post(self):
-    """Starts generating a feed URL by requesting a Facebook auth code.
+    """Starts generating a feed URL by requesting a Twitter auth code.
 
-    After retrieving an auth code, redirects to /facebook_got_auth_code,
+    After retrieving an auth code, redirects to /twitter_got_auth_code,
     which makes the next request to get the access token.
     """
     logging.info('Generating a new feed. Asking FB for auth code.')
 
     url = GET_AUTH_CODE_URL % {
-      'client_id': appengine_config.FACEBOOK_APP_ID,
+      'client_id': appengine_config.TWITTER_APP_ID,
       # TODO: CSRF protection identifier.
-      # http://developers.facebook.com/docs/authentication/
+      # http://developers.twitter.com/docs/authentication/
       'host_url': self.request.host_url,
       'state': self.request.host_url + '/got_auth_token',
       }
@@ -91,8 +91,8 @@ class GotAuthCode(webapp2.RequestHandler):
     # TODO: handle permission declines, errors, etc
     url = GET_ACCESS_TOKEN_URL % {
       'auth_code': auth_code,
-      'client_id': appengine_config.FACEBOOK_APP_ID,
-      'client_secret': appengine_config.FACEBOOK_APP_SECRET,
+      'client_id': appengine_config.TWITTER_APP_ID,
+      'client_secret': appengine_config.TWITTER_APP_SECRET,
       'host_url': self.request.host_url,
       }
     logging.info('getting access token via %s', url)
@@ -109,16 +109,16 @@ class GotAuthCode(webapp2.RequestHandler):
 
 
 class AtomHandler(webapp2.RequestHandler):
-  """Proxies the Atom feed for a Facebook user's stream.
+  """Proxies the Atom feed for a Twitter user's stream.
 
-  Authenticates to the Facebook API with the user's stored OAuth credentials.
+  Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
   def get(self):
     access_token = self.request.get('access_token')
     assert access_token
     resp = json.loads(util.urlfetch(API_HOME_URL % access_token))
 
-    fb = facebook.Facebook(self)
+    fb = twitter.Twitter(self)
     actor = fb.user_to_actor(resp)
     posts = resp.get('home', {}).get('data', [])
     activities = [fb.post_to_activity(p) for p in posts]
@@ -126,7 +126,7 @@ class AtomHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(
         ATOM_TEMPLATE_FILE,
-        {'title': 'Facebook news feed for %s' % actor['displayName'],
+        {'title': 'Twitter news feed for %s' % actor['displayName'],
          'updated': activities[0]['object'].get('updated') if activities else '',
          'actor': actor,
          'items': activities,

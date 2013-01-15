@@ -1,4 +1,4 @@
-application: facebook-atom
+application: twitter-atom
 version: 2
 runtime: python27
 threadsafe: true
