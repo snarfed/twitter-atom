@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>Facebook Atom feeds</title>
+  <link href="/static/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<div id="header">
+  <img id="logo" src="/static/facebook_rss_small.jpg"></img>
+  <p id="title"><span>Generated new feed</span></p>
+</div>
+
+<div id="body">
+<p>Here's your feed URL. It's private, so don't share it. Enjoy!</p>
+<p><nobr><a href="{{ atom_url }}" class="feed-url">{{ atom_url }}</a></nobr></p>
+
+<p>This site does <i>not</i> store your Facebook credentials or this URL. Don't
+worry, you can always come back and regenerate it!
+</p>
+
+<div id="bottom"></div>
+
+<div id="footer">
+  <a href="http://snarfed.org/about">Questions?</a>
+  | <a href="https://github.com/snarfed/facebook-atom">Source</a>
+  | <a href="http://code.google.com/appengine/">
+      <img src="/static/appengine_button_noborder.gif" /></a>
+  |&nbsp; <a href="http://facebook.com/">
+      <img src="/static/facebook.png" /></a>
+</div>
+
+</body>
+</html>

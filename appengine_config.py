@@ -1,1 +1,1 @@
-activitystreams-unofficial/webutil/appengine_config.py
+activitystreams/webutil/appengine_config.py
