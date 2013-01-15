@@ -1,7 +1,7 @@
-facebook-atom
+twitter-atom
 =============
 
-A webapp that generates and serves an Atom feed of your Facebook stream, ie
-posts from your friends.
+A webapp that generates and serves an Atom feed of your Twitter stream, ie
+tweets from people you follow.
 
-Deployed on App Engine at https://facebook-atom.appspot.com/
+Deployed on App Engine at http://twitter-atom.appspot.com/
