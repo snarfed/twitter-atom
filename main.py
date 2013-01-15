@@ -7,12 +7,9 @@ Based on both plusstreamfeed and salmon-unofficial.
 
 __author__ = 'Ryan Barrett <facebook-atom@ryanb.org>'
 
-import base64
-import httplib2
 import json
 import logging
 import os
-import re
 import urllib
 import urlparse
 
