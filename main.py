@@ -20,6 +20,7 @@ from activitystreams.webutil import util
 from activitystreams.webutil import webapp2
 import tweepy
 
+from google.appengine.api import urlfetch
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
@@ -28,10 +29,13 @@ GENERATED_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                        'templates', 'generated.html')
 ATOM_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                   'activitystreams', 'templates', 'user_feed.atom')
+LIST_URL = 'http://twitter.com/%s'
+API_LIST_TIMELINE_URL = \
+  'https://api.twitter.com/1.1/lists/statuses.json?owner_screen_name=%s&slug=%s'
 
 # based on salmon-unofficial/twitter.py.
-OAUTH_CALLBACK = '%s://%s/oauth_callback' % (appengine_config.SCHEME,
-                                             appengine_config.HOST)
+OAUTH_CALLBACK = '%s://%s/oauth_callback?list=%%s' % (appengine_config.SCHEME,
+                                                      appengine_config.HOST)
 
 
 class OAuthToken(db.Model):
@@ -41,17 +45,27 @@ class OAuthToken(db.Model):
   token_secret = db.StringProperty(required=True)
 
 
-class StartAuthHandler(webapp2.RequestHandler):
+class GenerateHandler(webapp2.RequestHandler):
   """Starts three-legged OAuth with Twitter.
 
   Fetches an OAuth request token, then redirects to Twitter's auth page to
   request an access token.
   """
   def get(self):
+    list_str = self.request.get('list')
+    if list_str:
+      # does this list exist?
+      resp = urlfetch.fetch(LIST_URL % list_str, method='HEAD', deadline=999)
+      if resp.status_code == 404:
+        self.abort(404, 'Twitter list not found: %s' % list_str)
+      elif resp.status_code != 200:
+        self.abort(resp.status_code, 'Error looking up Twitter list %s:\n%s' %
+                   (list_str, resp.content))
+
     try:
       auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
                                  appengine_config.TWITTER_APP_SECRET,
-                                 OAUTH_CALLBACK)
+                                 OAUTH_CALLBACK % list_str)
       auth_url = auth.get_authorization_url()
     except tweepy.TweepError, e:
       msg = 'Could not create Twitter OAuth request token: '
@@ -94,8 +108,9 @@ class CallbackHandler(webapp2.RequestHandler):
       logging.exception(msg)
       raise exc.HTTPInternalServerError(msg + `e`)
 
-    atom_url = '%s/atom?access_token_key=%s&access_token_secret=%s' % (
-      self.request.host_url, access_token.key, access_token.secret)
+    atom_url = '%s/atom?list=%s&access_token_key=%s&access_token_secret=%s' % (
+      self.request.host_url, self.request.get('list'),
+      access_token.key, access_token.secret)
     logging.info('generated feed URL: %s', atom_url)
     self.response.out.write(template.render(GENERATED_TEMPLATE_FILE,
                                             {'atom_url': atom_url}))
@@ -108,15 +123,23 @@ class AtomHandler(webapp2.RequestHandler):
   """
   def get(self):
     tw = twitter.Twitter(self)
-    # Twitter.urlfetch passes through access_token_key and access_token_secret
-    tweets = json.loads(tw.urlfetch(twitter.API_TIMELINE_URL % 20))
-    activities = [tw.tweet_to_activity(t) for t in tweets]
     actor = tw.get_actor()
+
+    list_str = self.request.get('list')
+    if list_str:
+      # Twitter.urlfetch passes through access_token_key and access_token_secret
+      resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')))
+      title = 'Twitter list %s' % list_str
+    else:
+      resp = tw.urlfetch(twitter.API_TIMELINE_URL % 20)
+      title = 'Twitter stream for %s' % actor['displayName']
+
+    activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
 
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(
         ATOM_TEMPLATE_FILE,
-        {'title': 'Twitter stream for %s' % actor['displayName'],
+        {'title': title,
          'updated': activities[0]['object'].get('published') if activities else '',
          'actor': actor,
          'items': activities,
@@ -125,7 +148,7 @@ class AtomHandler(webapp2.RequestHandler):
 
 
 application = webapp2.WSGIApplication(
-  [('/generate', StartAuthHandler),
+  [('/generate', GenerateHandler),
    ('/oauth_callback', CallbackHandler),
    ('/atom', AtomHandler),
    ],

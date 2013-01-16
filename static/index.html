@@ -16,15 +16,31 @@
 </div>
 
 <div id="body">
-<p>Want an Atom feed of your Twitter feed, ie tweets from people you follow,
+<p>Want an Atom feed of the tweets in your Twitter stream, or a Twitter list,
 that you can subscribe to and read in your favorite RSS feed reader?</p>
 
-<div style="text-align: center">
+<form method="get" action="/generate"
+ onsubmit="parts = document.getElementById('list').value.split('/');
+           if (parts.length != 2 || !parts[0] || !parts[1]) {
+             window.alert('List must be of the form username/list.');
+             return false;
+           }">
+<table id="buttons">
+<tr><td rowspan="2">
 <a href="/generate">
-  <input type="image" alt="Get my feed" src="/static/twitter_get_my_feed.png" />
+  <img alt="Get my feed" src="/static/twitter_get_my_feed.png" />
 </a>
-</div>
-</div>
+</td><td>
+  <input type="text" id="list" name="list" value="e.g. twitter/team"
+   onfocus="if (this.value == 'e.g. twitter/team') {this.value = '';} this.style.color = 'black';"
+   onblur="if (this.value == '') {this.value = 'e.g. twitter/team'; this.style.color = 'gray';}">
+
+</td></tr>
+<tr><td>
+  <input type="image" alt="Get this list's feed" src="/static/twitter_get_list_feed.png" />
+</td></tr>
+</table>
+</form>
 
 <div id="bottom"></div>
 
