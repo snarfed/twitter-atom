@@ -24,7 +24,7 @@ handlers:
   static_files: static/index.html
   upload: static/index.html
 
-- url: /(generate|got_auth_code)
+- url: /(generate|oauth_callback)
   script: main.application
 
 - url: /atom
