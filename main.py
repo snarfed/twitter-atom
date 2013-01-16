@@ -107,20 +107,17 @@ class AtomHandler(webapp2.RequestHandler):
   Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
   def get(self):
-    access_token = self.request.get('access_token')
-    assert access_token
-    resp = json.loads(util.urlfetch(API_HOME_URL % access_token))
-
     tw = twitter.Twitter(self)
-    actor = tw.user_to_actor(resp)
-    posts = resp.get('home', {}).get('data', [])
-    activities = [tw.post_to_activity(p) for p in posts]
+    # Twitter.urlfetch passes through access_token_key and access_token_secret
+    tweets = json.loads(tw.urlfetch(twitter.API_TIMELINE_URL % 20))
+    activities = [tw.tweet_to_activity(t) for t in tweets]
+    actor = tw.get_actor()
 
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(
         ATOM_TEMPLATE_FILE,
-        {'title': 'Twitter news feed for %s' % actor['displayName'],
-         'updated': activities[0]['object'].get('updated') if activities else '',
+        {'title': 'Twitter stream for %s' % actor['displayName'],
+         'updated': activities[0]['object'].get('published') if activities else '',
          'actor': actor,
          'items': activities,
          'request_url': self.request.path_url,
