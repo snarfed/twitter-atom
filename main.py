@@ -30,8 +30,9 @@ GENERATED_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
 ATOM_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                   'activitystreams', 'templates', 'user_feed.atom')
 LIST_URL = 'http://twitter.com/%s'
-API_LIST_TIMELINE_URL = \
-  'https://api.twitter.com/1.1/lists/statuses.json?owner_screen_name=%s&slug=%s'
+TWEET_COUNT = 50
+API_LIST_TIMELINE_URL = ('https://api.twitter.com/1.1/lists/statuses.json'
+                         '?owner_screen_name=%%s&slug=%%s&count=%d' % TWEET_COUNT)
 
 # based on salmon-unofficial/twitter.py.
 OAUTH_CALLBACK = '%s://%s/oauth_callback?list=%%s' % (appengine_config.SCHEME,
@@ -131,7 +132,7 @@ class AtomHandler(webapp2.RequestHandler):
       resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')))
       title = 'Twitter list %s' % list_str
     else:
-      resp = tw.urlfetch(twitter.API_TIMELINE_URL % 20)
+      resp = tw.urlfetch(twitter.API_TIMELINE_URL % TWEET_COUNT)
       title = 'Twitter stream for %s' % actor['displayName']
 
     activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
