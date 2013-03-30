@@ -3,7 +3,7 @@ body {
   background-color: white;
   color: black;
   margin: 1em;
-  margin-top: 2em;
+  margin-top: 1em;
 }
 
 body, input, textarea {
@@ -17,7 +17,7 @@ body, input, textarea {
 }
 
 #header {
-  margin: 1.5em 0 0 .5em;
+  margin: 2em 0 0 .5em;
 }
 
 #title, #bottom {

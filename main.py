@@ -137,6 +137,34 @@ class AtomHandler(webapp2.RequestHandler):
 
     activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
 
+    # shutdown warning
+    activities.append({
+        'verb': 'post',
+        'published': '2012-03-30T15:00:00',
+        'id': 'tag:twitter-atom.appspot.com,2013:0',
+        'url': 'http://twitter-atom.appspot.com/',
+        'title': 'ATTENTION: Twitter Atom feeds is shutting down!',
+        'actor': {
+          'displayName': 'Ryan Barrett',
+          'id': 'http://snarfed.org/',
+          'url': 'http://snarfed.org/',
+          },
+        'object': {
+          'id': 'tag:twitter-atom.appspot.com,2013:0',
+          'published': '2012-03-30T15:00:00',
+          'content': '''
+<div style="color: red; font-style: italic;">
+<p><b>Bad news! this service (Twitter Atom feeds) is shutting down</b>.</p>
+
+<p> Twitter has told me that it violates <a href="https://dev.twitter.com/terms/api-terms">their TOS</a> because it republishes tweets, which is forbidden. They say I can keep it running if clients fetch the tweets directly, but the clients are feed readers I don't control, so that's not really possible.</p>
+
+<p>So, it's the end of the line. I'll keep it running for a couple weeks, but not much longer. I wish I had an alternative to recommend, but any alternative would have the same problem. If you're ambitious, you're welcome to deploy <a href="https://github.com/snarfed/twitter-atom">the code</a> on your own <a href="https://developers.google.com/appengine/">App Engine app</a> and <a href="https://dev.twitter.com/apps/new">Twitter app id</a>.</p>
+
+<p>Otherwise, apologies, and thanks for your support, it's been fun. So long, and thanks for all the fish!</p>
+</div>''',
+          },
+        })
+
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(
         ATOM_TEMPLATE_FILE,
