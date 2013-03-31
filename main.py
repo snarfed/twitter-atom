@@ -154,7 +154,7 @@ class AtomHandler(webapp2.RequestHandler):
           'published': '2012-03-30T15:00:00',
           'content': '''
 <div style="color: red; font-style: italic;">
-<p><b>Bad news! this service (Twitter Atom feeds) is shutting down</b>.</p>
+<p><b>Bad news! This service (Twitter Atom feeds) is shutting down</b>.</p>
 
 <p> Twitter has told me that it violates <a href="https://dev.twitter.com/terms/api-terms">their TOS</a> because it republishes tweets, which is forbidden. They say I can keep it running if clients fetch the tweets directly, but the clients are feed readers I don't control, so that's not really possible.</p>
 
