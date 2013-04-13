@@ -29,6 +29,11 @@ GENERATED_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                        'templates', 'generated.html')
 ATOM_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                   'activitystreams', 'templates', 'user_feed.atom')
+ACCESS_TOKEN_WHITELIST = appengine_config.read(os.path.join(os.path.dirname(__file__),
+                                                            'access_token_whitelist'))
+if ACCESS_TOKEN_WHITELIST:
+  ACCESS_TOKEN_WHITELIST = ACCESS_TOKEN_WHITELIST.splitlines()
+
 LIST_URL = 'http://twitter.com/%s'
 TWEET_COUNT = 50
 API_LIST_TIMELINE_URL = ('https://api.twitter.com/1.1/lists/statuses.json'
@@ -123,47 +128,72 @@ class AtomHandler(webapp2.RequestHandler):
   Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
   def get(self):
-    tw = twitter.Twitter(self)
-    actor = tw.get_actor()
+    token_key = self.request.get('access_token_key')
 
-    list_str = self.request.get('list')
-    if list_str:
-      # Twitter.urlfetch passes through access_token_key and access_token_secret
-      resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')))
-      title = 'Twitter list %s' % list_str
+    if ACCESS_TOKEN_WHITELIST and token_key in ACCESS_TOKEN_WHITELIST:
+      tw = twitter.Twitter(self)
+      actor = tw.get_actor()
+
+      list_str = self.request.get('list')
+      if list_str:
+        # Twitter.urlfetch passes through access_token_key and access_token_secret
+        resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')))
+        title = 'Twitter list %s' % list_str
+      else:
+        resp = tw.urlfetch(twitter.API_TIMELINE_URL % TWEET_COUNT)
+        title = 'Twitter stream for %s' % actor['displayName']
+
+      activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
+
     else:
-      resp = tw.urlfetch(twitter.API_TIMELINE_URL % TWEET_COUNT)
-      title = 'Twitter stream for %s' % actor['displayName']
-
-    activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
-
-    # shutdown warning
-    activities.append({
+      title = 'Goodbye from Twitter Atom feeds!'
+      actor = {
+        'displayName': 'Ryan Barrett',
+        'id': 'http://snarfed.org/',
+        'url': 'http://snarfed.org/',
+        }
+      activities = [{
         'verb': 'post',
-        'published': '2012-03-30T15:00:00',
-        'id': 'tag:twitter-atom.appspot.com,2013:0',
+        'published': '2013-04-13T12:00:00',
+        'id': 'tag:twitter-atom.appspot.com,2013:1',
         'url': 'http://twitter-atom.appspot.com/',
-        'title': 'ATTENTION: Twitter Atom feeds is shutting down!',
-        'actor': {
-          'displayName': 'Ryan Barrett',
-          'id': 'http://snarfed.org/',
-          'url': 'http://snarfed.org/',
-          },
+        'title': title,
+        'actor': actor,
         'object': {
-          'id': 'tag:twitter-atom.appspot.com,2013:0',
-          'published': '2012-03-30T15:00:00',
+          'id': 'tag:twitter-atom.appspot.com,2013:1',
+          'published': '2013-04-13T12:00:00',
           'content': '''
-<div style="color: red; font-style: italic;">
-<p><b>Bad news! This service (Twitter Atom feeds) is shutting down</b>.</p>
-
-<p> Twitter has told me that it violates <a href="https://dev.twitter.com/terms/api-terms">their TOS</a> because it republishes tweets, which is forbidden. They say I can keep it running if clients fetch the tweets directly, but the clients are feed readers I don't control, so that's not really possible.</p>
-
-<p>So, it's the end of the line. I'll keep it running for a couple weeks, but not much longer. I wish I had an alternative to recommend, but any alternative would have the same problem. If you're ambitious, you're welcome to deploy <a href="https://github.com/snarfed/twitter-atom">the code</a> on your own <a href="https://developers.google.com/appengine/">App Engine app</a> and <a href="https://dev.twitter.com/apps/new">Twitter app id</a>.</p>
-
-<p>Otherwise, apologies, and thanks for your support, it's been fun. So long, and thanks for all the fish!</p>
-</div>''',
+<p style="color: red; font-style: italic;"><b>Twitter Atom feeds is signing off! <a href="http://twitter-atom.appspot.com/">More details here.</a>This is the last item you'll sed in your feed. Goodbye!</b></p>''',
           },
-        })
+        }]
+
+#     # shutdown warning
+#     activities.append({
+#         'verb': 'post',
+#         'published': '2013-03-30T15:00:00',
+#         'id': 'tag:twitter-atom.appspot.com,2013:0',
+#         'url': 'http://twitter-atom.appspot.com/',
+#         'title': 'ATTENTION: Twitter Atom feeds is shutting down!',
+#         'actor': {
+#           'displayName': 'Ryan Barrett',
+#           'id': 'http://snarfed.org/',
+#           'url': 'http://snarfed.org/',
+#           },
+#         'object': {
+#           'id': 'tag:twitter-atom.appspot.com,2013:0',
+#           'published': '2013-03-30T15:00:00',
+#           'content': '''
+# <div style="color: red; font-style: italic;">
+# <p><b>Bad news! This service (Twitter Atom feeds) is shutting down</b>.</p>
+
+# <p> Twitter has told me that it violates <a href="https://dev.twitter.com/terms/api-terms">their TOS</a> because it republishes tweets, which is forbidden. They say I can keep it running if clients fetch the tweets directly, but the clients are feed readers I don't control, so that's not really possible.</p>
+
+# <p>So, it's the end of the line. I'll keep it running for a couple weeks, but not much longer. I wish I had an alternative to recommend, but any alternative would have the same problem. If you're ambitious, you're welcome to deploy <a href="https://github.com/snarfed/twitter-atom">the code</a> on your own <a href="https://developers.google.com/appengine/">App Engine app</a> and <a href="https://dev.twitter.com/apps/new">Twitter app id</a>.</p>
+
+# <p>Otherwise, apologies, and thanks for your support, it's been fun. So long, and thanks for all the fish!</p>
+# </div>''',
+#           },
+#         })
 
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(

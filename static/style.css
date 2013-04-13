@@ -1,7 +1,7 @@
 /* colors and ideas largely stolen from Google+. */
 body {
   background-color: white;
-  color: black;
+  color: lightgray;
   margin: 1em;
   margin-top: 1em;
 }
@@ -11,7 +11,12 @@ body, input, textarea {
   font-size: medium;
 }
 
-#body, #graybody {
+.gray {
+  /* background-color: lightgray; */
+  color: lightgray;
+}
+
+#body {
   clear: both;
   margin: 1em 0 0 1em;
 }
@@ -23,7 +28,7 @@ body, input, textarea {
 #title, #bottom {
   padding: .3em;
   background-color: #2d2d2d;
-  color: #eee;
+  color: darkgray;
   font-weight: bold;
 }
 
