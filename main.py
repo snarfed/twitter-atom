@@ -163,7 +163,7 @@ class AtomHandler(webapp2.RequestHandler):
           'id': 'tag:twitter-atom.appspot.com,2013:1',
           'published': '2013-04-13T12:00:00',
           'content': '''
-<p style="color: red; font-style: italic;"><b>Twitter Atom feeds is signing off! <a href="http://twitter-atom.appspot.com/">More details here.</a>This is the last item you'll sed in your feed. Goodbye!</b></p>''',
+<p style="color: red; font-style: italic;"><b>Twitter Atom feeds is signing off! <a href="http://twitter-atom.appspot.com/">More details here.</a> This is the last item you'll see in your feed. Goodbye!</b></p>''',
           },
         }]
 
