@@ -1,7 +1,7 @@
 /* colors and ideas largely stolen from Google+. */
 body {
   background-color: white;
-  color: lightgray;
+  color: black;
   margin: 1em;
   margin-top: 1em;
 }
@@ -12,8 +12,7 @@ body, input, textarea {
 }
 
 .gray {
-  /* background-color: lightgray; */
-  color: lightgray;
+  background-color: lightgray;
 }
 
 #body {
@@ -28,7 +27,7 @@ body, input, textarea {
 #title, #bottom {
   padding: .3em;
   background-color: #2d2d2d;
-  color: darkgray;
+  color: #eee;
   font-weight: bold;
 }
 
@@ -40,6 +39,10 @@ body, input, textarea {
 
   box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
   -moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
+}
+
+form {
+  text-align: center;
 }
 
 #buttons {
@@ -101,8 +104,3 @@ img#logo {
   padding-bottom: .5em;
   margin-top: -1em;
 }
-
-/* for debugging */
-/* * { */
-/*   border: 1px solid green; */
-/* } */

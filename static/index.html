@@ -10,22 +10,12 @@
 
 <body>
 
-<div class="error">
-<p><b>This service has shut down.</b></p>
-
-<p>Twitter told me that it violated <a href="https://dev.twitter.com/terms/api-terms">their TOS</a> because it republishes tweets, which is forbidden. They said I could keep it running if clients fetched the tweets directly, but the clients are feed readers I don't control, so that's not really possible.</p>
-
-<p>I wish I had an alternative to recommend, but any alternative would have the same problem. If you're ambitious, you're welcome to deploy <a href="https://github.com/snarfed/twitter-atom">the code</a> on your own <a href="https://developers.google.com/appengine/">App Engine app</a> and <a href="https://dev.twitter.com/apps/new">Twitter app id</a>.</p>
-
-<p>Otherwise, apologies, and thanks for your support, it's been fun. So long, and thanks for all the fish!</p>
-</div>
-
-<div id="header" class="gray">
+<div id="header">
   <a href="/"><img id="logo" src="/static/twitter_atom_small.jpg"></img></a>
   <p id="title"><span>Twitter Atom feeds</span></p>
 </div>
 
-<div id="body" class="gray">
+<div id="body">
 <p>Want an Atom feed of your
 <a href="https://support.twitter.com/articles/164083-what-is-a-timeline">Twitter
 stream</a>, or a
@@ -33,33 +23,40 @@ stream</a>, or a
 list</a>,
 that you can subscribe to and read in your favorite RSS feed reader?</p>
 
-<!-- <form method="get" action="/generate" -->
-<!--  onsubmit="parts = document.getElementById('list').value.split('/'); -->
-<!--            if (parts.length != 2 || !parts[0] || !parts[1]) { -->
-<!--              window.alert('List must be of the form username/list.'); -->
-<!--              return false; -->
-<!--            }"> -->
+<p>First, <a href="">get a Twitter API key</a>
+
+<form method="get" action="/generate"
+ onsubmit="parts = document.getElementById('list').value.split('/');
+           if (parts.length != 2 || !parts[0] || !parts[1]) {
+             window.alert('List must be of the form username/list.');
+             return false;
+           } else if (!document.getElementById('api_key').value.trim() ||
+                      !document.getElementById('api_secret').value.trim()) {
+             window.alert('You must enter an API key and secret.');
+             return false;
+           }">
 <table id="buttons">
 <tr><td rowspan="2">
-<!-- <a href="/generate"> -->
+<a href="/generate">
   <img alt="Get my feed" src="/static/twitter_get_my_feed.png" />
-</a> <!--  -->
+</a>
+</td><td rowspan="2">
+OR
 </td><td>
   <input type="text" id="list" name="list" value="e.g. twitter/team"
    onfocus="if (this.value == 'e.g. twitter/team') {this.value = '';} this.style.color = 'black';"
-   onblur="if (this.value == '') {this.value = 'e.g. twitter/team'; this.style.color = 'gray';}"
-   disabled="true" />
+   onblur="if (this.value == '') {this.value = 'e.g. twitter/team'; this.style.color = 'gray';}" />
 
 </td></tr>
 <tr><td>
-  <img alt="Get this list's feed" src="/static/twitter_get_list_feed.png" />
+  <input type="image" alt="Get this list's feed" src="/static/twitter_get_list_feed.png" />
 </td></tr>
 </table>
-<!-- </form> -->
+</form>
 
-<div id="bottom" class="gray"></div>
+<div id="bottom"></div>
 
-<div id="footer" class="gray">
+<div id="footer">
   <a href="http://snarfed.org/2013-01-16_atom_feeds_for_facebook_and_twitter">Questions?</a>
   | <a href="https://github.com/snarfed/twitter-atom">Source</a>
   | <a href="http://code.google.com/appengine/">
