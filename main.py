@@ -152,7 +152,7 @@ class AtomHandler(webapp2.RequestHandler):
                          app_key=consumer_key, app_secret=consumer_secret)
       title = 'Twitter stream for %s' % actor['displayName']
 
-      activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
+    activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
 
     self.response.headers['Content-Type'] = 'text/xml'
     self.response.out.write(template.render(
