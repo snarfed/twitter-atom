@@ -23,22 +23,34 @@ stream</a>, or a
 list</a>,
 that you can subscribe to and read in your favorite RSS feed reader?</p>
 
-<p>First, <a href="">get a Twitter API key</a>
+<br />
+<p>First, <a href="">get a Twitter API key</a>:</p>
 
 <form method="get" action="/generate"
- onsubmit="parts = document.getElementById('list').value.split('/');
-           if (parts.length != 2 || !parts[0] || !parts[1]) {
-             window.alert('List must be of the form username/list.');
-             return false;
-           } else if (!document.getElementById('api_key').value.trim() ||
-                      !document.getElementById('api_secret').value.trim()) {
-             window.alert('You must enter an API key and secret.');
-             return false;
-           }">
+      onsubmit="if (document.getElementById('consumer_key').value.trim() == '' ||
+                    document.getElementById('consumer_secret').value.trim() == '') {
+                  window.alert('You must enter a consumer key and secret.');
+                  return false;
+                }">
+
+<table id="consumer">
+<tr><td class="label">
+<label for="consumer_key">Consumer key</label>
+</td><td>
+<input type="text" id="consumer_key" name="consumer_key" />
+</td></tr><tr><td class="label">
+<label for="consumer_secret">Consumer secret</label>
+</td><td>
+<input type="text" id="consumer_secret" name="consumer_secret" />
+</td></tr></table>
+
+<br /><br />
+<p>Second, do you want your full stream? Or just the people on a list?</p>
+
 <table id="buttons">
 <tr><td rowspan="2">
-<a href="/generate">
-  <img alt="Get my feed" src="/static/twitter_get_my_feed.png" />
+  <input type="image" alt="Get my feed" src="/static/twitter_get_my_feed.png"
+         onclick="document.getElementById('list').value = '';" />
 </a>
 </td><td rowspan="2">
 OR
@@ -49,7 +61,15 @@ OR
 
 </td></tr>
 <tr><td>
-  <input type="image" alt="Get this list's feed" src="/static/twitter_get_list_feed.png" />
+  <input type="image" alt="Get this list's feed"
+         src="/static/twitter_get_list_feed.png"
+         onclick="
+value = document.getElementById('list').value;
+parts = value.split('/');
+if (value == 'e.g. twitter/team' || parts.length != 2 || !parts[0] || !parts[1]) {
+  window.alert('List must be of the form username/list.');
+  return false;
+}" />
 </td></tr>
 </table>
 </form>

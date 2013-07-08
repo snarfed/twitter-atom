@@ -45,15 +45,15 @@ class OAuthToken(db.Model):
   """
   token_key = db.StringProperty(required=True)
   token_secret = db.StringProperty(required=True)
-  api_key = db.StringProperty(required=True)
-  api_secret = db.StringProperty(required=True)
+  consumer_key = db.StringProperty(required=True)
+  consumer_secret = db.StringProperty(required=True)
 
 
 def get_required_query_param(request, param):
   val = request.get(param, None)
   if val is None:
     raise exc.HTTPBadRequest('Missing required query parameter %s.' % param)
-  return val
+  return str(val)
 
 
 class GenerateHandler(webapp2.RequestHandler):
@@ -73,11 +73,12 @@ class GenerateHandler(webapp2.RequestHandler):
         self.abort(resp.status_code, 'Error looking up Twitter list %s:\n%s' %
                    (list_str, resp.content))
 
-    api_key = get_required_query_param(self.request, 'api_key')
-    api_secret = get_required_query_param(self.request, 'api_secret')
+    consumer_key = get_required_query_param(self.request, 'consumer_key')
+    consumer_secret = get_required_query_param(self.request, 'consumer_secret')
 
     try:
-      auth = tweepy.OAuthHandler(api_key, api_secret, OAUTH_CALLBACK % list_str)
+      auth = tweepy.OAuthHandler(consumer_key, consumer_secret,
+                                 OAUTH_CALLBACK % list_str)
       auth_url = auth.get_authorization_url()
     except tweepy.TweepError, e:
       msg = 'Could not create Twitter OAuth request token: '
@@ -87,8 +88,8 @@ class GenerateHandler(webapp2.RequestHandler):
     # store the request token for later use in the callback handler
     OAuthToken(token_key=auth.request_token.key,
                token_secret=auth.request_token.secret,
-               api_key=api_key,
-               api_secret=api_secret,
+               consumer_key=consumer_key,
+               consumer_secret=consumer_secret,
                ).put()
     logging.info('Generated request token, redirecting to Twitter: %s', auth_url)
     self.redirect(auth_url)
@@ -108,7 +109,8 @@ class CallbackHandler(webapp2.RequestHandler):
       raise exc.HTTPBadRequest('Invalid oauth_token: %s' % oauth_token)
 
     # Rebuild the auth handler
-    auth = tweepy.OAuthHandler(request_token.api_key, request_token.api_secret)
+    auth = tweepy.OAuthHandler(request_token.consumer_key,
+                               request_token.consumer_secret)
     auth.set_request_token(request_token.token_key, request_token.token_secret)
 
     # Fetch the access token
@@ -119,10 +121,10 @@ class CallbackHandler(webapp2.RequestHandler):
       logging.exception(msg)
       raise exc.HTTPInternalServerError(msg + `e`)
 
-    atom_url = '%s/atom?list=%s&access_token_key=%s&access_token_secret=%s&api_key=%s&api_secret=%s' % (
+    atom_url = '%s/atom?list=%s&access_token_key=%s&access_token_secret=%s&consumer_key=%s&consumer_secret=%s' % (
       self.request.host_url, self.request.get('list'),
       access_token.key, access_token.secret,
-      request_token.api_key, request_token.api_secret)
+      request_token.consumer_key, request_token.consumer_secret)
     logging.info('generated feed URL: %s', atom_url)
     self.response.out.write(template.render(GENERATED_TEMPLATE_FILE,
                                             {'atom_url': atom_url}))
@@ -133,20 +135,21 @@ class AtomHandler(webapp2.RequestHandler):
   Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
   def get(self):
-    token_key = self.request.get('access_token_key')
-    api_key = self.get_required_query_param('api_key')
-    api_secret = self.get_required_param('api_secret')
+    consumer_key = get_required_query_param(self.request, 'consumer_key')
+    consumer_secret = get_required_query_param(self.request, 'consumer_secret')
 
     tw = twitter.Twitter(self)
-    actor = tw.get_actor()
+    actor = tw.get_actor(app_key=consumer_key, app_secret=consumer_secret)
 
     list_str = self.request.get('list')
     if list_str:
       # Twitter.urlfetch passes through access_token_key and access_token_secret
-      resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')))
+      resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')),
+                         app_key=consumer_key, app_secret=consumer_secret)
       title = 'Twitter list %s' % list_str
     else:
-      resp = tw.urlfetch(twitter.API_TIMELINE_URL % TWEET_COUNT)
+      resp = tw.urlfetch(twitter.API_TIMELINE_URL % TWEET_COUNT,
+                         app_key=consumer_key, app_secret=consumer_secret)
       title = 'Twitter stream for %s' % actor['displayName']
 
       activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]

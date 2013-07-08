@@ -18,6 +18,7 @@ body, input, textarea {
 #body {
   clear: both;
   margin: 1em 0 0 1em;
+  text-align: center;
 }
 
 #header {
@@ -41,14 +42,18 @@ body, input, textarea {
   -moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
 }
 
-form {
-  text-align: center;
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border-spacing: 1em .5em;
 }
 
 #buttons {
-  margin-left: auto;
-  margin-right: auto;
   border-spacing: 2em .5em;
+}
+
+td.label {
+  text-align: right;
 }
 
 #list {
