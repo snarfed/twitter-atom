@@ -21,10 +21,52 @@
 stream</a>, or a
 <a href="https://support.twitter.com/articles/76460-how-to-use-twitter-lists">Twitter
 list</a>,
-that you can subscribe to and read in your favorite RSS feed reader?</p>
+that you can subscribe to and read in your favorite RSS feed reader?
+This site can provide one for you!</p>
 
-<br />
-<p>First, <a href="">get a Twitter API key</a>:</p>
+<script type="text/javascript">
+function show(id, height) {
+  var ids = ["ss-create-button", "ss-details", "ss-oauth-settings", "why-app"];
+  ids.forEach(function (ssid) {
+    var elem = document.getElementById(ssid);
+    elem.height = (ssid == id) ? height : 0;
+    elem.style.opacity = (ssid == id) ? 1 : 0;
+  });
+}
+
+function hide() {
+    show(null, null);
+}
+</script>
+
+<p>
+First, <a href="https://dev.twitter.com/apps/new">click here get a Twitter app
+key</a>. (<a onmouseover="show('why-app', 'auto')" onmouseout="hide()">Why?</a>)
+Enter
+<a onmouseover="show('ss-details', 491)" onmouseout="hide()">details like these</a>,
+click the
+<a onmouseover="show('ss-create-button', 144)" onmouseout="hide()">checkbox
+ and button</a>,
+and copy and paste the
+<a onmouseover="show('ss-oauth-settings', 200)" onmouseout="hide()">consumer
+ key and secret</a>
+below. Hover over these links for help.
+</p>
+
+<div id="screenshots">
+<p id="why-app" style="height: 0 !important" >
+Twitter <a href="https://dev.twitter.com/terms/api-terms">doesn't like it</a>
+when apps like this reformat and republish tweets for many different users. They
+don't mind if you use your own app to do it for just your account, though.
+</p>
+
+<img id="ss-create-button" width="296" height="0"
+     src="/static/twitter_app_create_button.png" /> <!-- height 144 -->
+<img id="ss-details" width="220" height="0"
+     src="/static/twitter_app_details.png" /> <!-- height 491 -->
+<img id="ss-oauth-settings" width="588" height="0"
+     src="/static/twitter_app_oauth_settings.png" /> <!-- height 200 -->
+</div>
 
 <form method="get" action="/generate"
       onsubmit="if (document.getElementById('consumer_key').value.trim() == '' ||
@@ -45,7 +87,7 @@ that you can subscribe to and read in your favorite RSS feed reader?</p>
 </td></tr></table>
 
 <br /><br />
-<p>Second, do you want your full stream? Or just the people on a list?</p>
+<p>Second, choose either your full stream or just the people on a list.</p>
 
 <table id="buttons">
 <tr><td rowspan="2">

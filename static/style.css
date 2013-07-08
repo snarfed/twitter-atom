@@ -4,6 +4,8 @@ body {
   color: black;
   margin: 1em;
   margin-top: 1em;
+  overflow-y: scroll;
+  max-width: 800px;
 }
 
 body, input, textarea {
@@ -18,7 +20,6 @@ body, input, textarea {
 #body {
   clear: both;
   margin: 1em 0 0 1em;
-  text-align: center;
 }
 
 #header {
@@ -40,6 +41,14 @@ body, input, textarea {
 
   box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
   -moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
+}
+
+#screenshots > * {
+  opacity: 0;
+  -moz-transition: width 1s, height 1s, opacity 1s;
+  -webkit-transition: width 1s, height 1s, opacity 1s;
+  -o-transition: width 1s, height 1s, opacity 1s;
+  transition: width 1s, height 1s, opacity 1s;
 }
 
 table {
