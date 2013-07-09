@@ -43,7 +43,7 @@ body, input, textarea {
   -moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
 }
 
-#screenshots > * {
+.screenshots > * {
   opacity: 0;
 
   -moz-transition: width 1s, height 1s, opacity 1s;
