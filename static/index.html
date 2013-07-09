@@ -25,7 +25,9 @@ that you can subscribe to and read in your favorite RSS feed reader?
 This site can provide one for you!</p>
 
 <script type="text/javascript">
+var timedHide = 0;
 function show(id, height) {
+  window.clearTimeout(timedHide);
   var ids = ["ss-create-button", "ss-details", "ss-oauth-settings", "why-app"];
   ids.forEach(function (ssid) {
     var elem = document.getElementById(ssid);
@@ -35,7 +37,7 @@ function show(id, height) {
 }
 
 function hide() {
-    show(null, null);
+  timedHide = window.setTimeout(function() { show(null, null); }, 1000 /* ms */);
 }
 </script>
 
@@ -54,10 +56,14 @@ below. Hover over these links for help.
 </p>
 
 <div id="screenshots">
-<p id="why-app" style="height: 0 !important" >
+<p id="why-app" style="height: 0 !important"
+   onmouseover="if (this.style.opacity == 1) {
+                  show('why-app', 'auto');
+                }"
+   onmouseout="hide()">
 Twitter <a href="https://dev.twitter.com/terms/api-terms">doesn't like it</a>
-when apps like this reformat and republish tweets for many different users. They
-don't mind if you use your own app to do it for just your account, though.
+when apps reformat and republish tweets for many different users like this. They
+don't mind if you use your own app to do it just for yourself, though.
 </p>
 
 <img id="ss-create-button" width="296" height="0"
