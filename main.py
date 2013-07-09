@@ -135,6 +135,33 @@ class AtomHandler(webapp2.RequestHandler):
   Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
   def get(self):
+    if (not self.request.get('consumer_key') and
+        not self.request.get('consumer_secret')):
+      # Welcome back message for old feeds
+      self.response.headers['Content-Type'] = 'text/xml'
+      self.response.out.write("""\
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
+<generator uri="https://github.com/snarfed/activitystreams-unofficial" version="0.1">
+  activitystreams-unofficial</generator>
+<id>%s</id>
+<title>Twitter Atom feeds is back!</title>
+<updated>2013-07-08T20:00:00</updated>
+<entry>
+<id>tag:twitter-atom.appspot.com,2013:2</id>
+<title>Twitter Atom feeds is back!</title>
+<content type="xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<p style="color: red; font-style: italic;"><b>Twitter Atom feeds is back! I'm experimenting with a new design that Twitter will (hopefully) be ok with. You can try it out by <a href="http://twitter-atom.appspot.com/">generating a new feed here</a>. Feel free to <a href="http://twitter.com/snarfed_org">ping me</a> if you have any questions. Welcome back!</b></p>
+</div>
+</content>
+<published>2013-07-08T20:00:00</published>
+</entry>
+</feed>
+""")
+      return
+
+    # New style feed with user-provided app (consumer) key and secret
     consumer_key = get_required_query_param(self.request, 'consumer_key')
     consumer_secret = get_required_query_param(self.request, 'consumer_secret')
 
