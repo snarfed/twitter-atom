@@ -188,6 +188,7 @@ class AtomHandler(webapp2.RequestHandler):
          'updated': activities[0]['object'].get('published') if activities else '',
          'actor': actor,
          'items': activities,
+         'host_url': self.request.host_url,
          'request_url': self.request.url,
          }))
 
