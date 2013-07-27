@@ -66,12 +66,14 @@ class GenerateHandler(webapp2.RequestHandler):
     list_str = self.request.get('list')
     if list_str:
       # does this list exist?
-      resp = urlfetch.fetch(LIST_URL % list_str, method='HEAD', deadline=999)
-      if resp.status_code == 404:
-        self.abort(404, 'Twitter list not found: %s' % list_str)
-      elif resp.status_code != 200:
-        self.abort(resp.status_code, 'Error looking up Twitter list %s:\n%s' %
-                   (list_str, resp.content))
+      # nevermind, this fails on private lists.
+      # resp = urlfetch.fetch(LIST_URL % list_str, method='HEAD', deadline=999)
+      # if resp.status_code == 404:
+      #   self.abort(404, 'Twitter list not found: %s' % list_str)
+      # elif resp.status_code != 200:
+      #   self.abort(resp.status_code, 'Error looking up Twitter list %s:\n%s' %
+      #              (list_str, resp.content))
+      pass
 
     consumer_key = get_required_query_param(self.request, 'consumer_key')
     consumer_secret = get_required_query_param(self.request, 'consumer_secret')
@@ -170,6 +172,8 @@ class AtomHandler(webapp2.RequestHandler):
 
     list_str = self.request.get('list')
     if list_str:
+      if list_str.startswith('@'):
+        list_str = list_str[1:]
       # Twitter.urlfetch passes through access_token_key and access_token_secret
       resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')),
                          app_key=consumer_key, app_secret=consumer_secret)

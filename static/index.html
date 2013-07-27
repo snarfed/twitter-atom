@@ -115,7 +115,8 @@ OR
          onclick="
 value = document.getElementById('list').value;
 parts = value.split('/');
-if (value == 'e.g. twitter/team' || parts.length != 2 || !parts[0] || !parts[1]) {
+if (value == 'e.g. twitter/team' || parts.length != 2 || !parts[0] || !parts[1] ||
+    !parts[0].match('^[A-Za-z0-9_@]+$')) {
   window.alert('List must be of the form username/list.');
   return false;
 }" />
