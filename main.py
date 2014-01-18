@@ -1,10 +1,10 @@
-#!/usr/bin/python
 """An App Engine app that provides "private" Atom feeds for your Twitter news
 feed, ie tweets from people you follow.
 
-Based on both plusstreamfeed and salmon-unofficial.
+Not yet ported to oauth-dropins because this needs to set the app (consumer) key
+and secret dynamically, which oauth-dropins.twitter doesn't yet support and
+isn't quite trivial to add.
 """
-
 
 __author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
 
@@ -12,17 +12,18 @@ import json
 import logging
 import os
 import urllib
+import urlparse
 from webob import exc
 
 import appengine_config
 from activitystreams import twitter
+from activitystreams.oauth_dropins import tweepy
 from activitystreams.webutil import util
-from activitystreams.webutil import webapp2
-import tweepy
 
 from google.appengine.api import urlfetch
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
+import webapp2
 
 
 GENERATED_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
@@ -34,6 +35,8 @@ LIST_URL = 'http://twitter.com/%s'
 TWEET_COUNT = 50
 API_LIST_TIMELINE_URL = ('https://api.twitter.com/1.1/lists/statuses.json'
                          '?owner_screen_name=%%s&slug=%%s&count=%d' % TWEET_COUNT)
+API_CURRENT_USER_URL = \
+  'https://api.twitter.com/1.1/account/verify_credentials.json'
 
 # based on salmon-unofficial/twitter.py.
 OAUTH_CALLBACK = '%s://%s/oauth_callback?list=%%s' % (appengine_config.SCHEME,
@@ -49,11 +52,34 @@ class OAuthToken(db.Model):
   consumer_secret = db.StringProperty(required=True)
 
 
-def get_required_query_param(request, param):
-  val = request.get(param, None)
-  if val is None:
-    raise exc.HTTPBadRequest('Missing required query parameter %s.' % param)
-  return str(val)
+def signed_urlfetch(self, url):
+  app_key = util.get_required_param(self, 'consumer_key')
+  app_secret = util.get_required_param(self, 'consumer_secret')
+  access_token_key = util.get_required_param(self, 'access_token_key')
+  access_token_secret = util.get_required_param(self, 'access_token_secret')
+
+  auth = tweepy.OAuthHandler(app_key, app_secret)
+  # make sure token key and secret aren't unicode because python's hmac
+  # module (used by tweepy/oauth.py) expects strings.
+  # http://stackoverflow.com/questions/11396789
+  auth.set_access_token(str(access_token_key), str(access_token_secret))
+  headers = {}
+
+  parsed = urlparse.urlparse(url)
+  url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
+  auth.apply_auth(url_without_query, 'GET', headers,
+                  dict(urlparse.parse_qsl(parsed.query)))
+  logging.info('Populated Authorization header from access token: %s',
+               headers.get('Authorization'))
+
+  logging.debug('Fetching %s', url)
+  resp = urlfetch.fetch(url, headers=headers, deadline=999)
+  if resp.status_code == 200:
+    return resp.content
+  else:
+    logging.debug('GET %s returned %d', url, resp.status_code)
+    webapp2.abort(resp.status_code, body_template=resp.content,
+                  headers=resp.headers)
 
 
 class GenerateHandler(webapp2.RequestHandler):
@@ -75,8 +101,8 @@ class GenerateHandler(webapp2.RequestHandler):
       #              (list_str, resp.content))
       pass
 
-    consumer_key = get_required_query_param(self.request, 'consumer_key')
-    consumer_secret = get_required_query_param(self.request, 'consumer_secret')
+    consumer_key = str(util.get_required_param(self, 'consumer_key'))
+    consumer_secret = str(util.get_required_param(self, 'consumer_secret'))
 
     try:
       auth = tweepy.OAuthHandler(consumer_key, consumer_secret,
@@ -102,7 +128,7 @@ class CallbackHandler(webapp2.RequestHandler):
   """
 
   def get(self):
-    oauth_token = get_required_query_param(self.request, 'oauth_token')
+    oauth_token = util.get_required_param(self, 'oauth_token')
     oauth_verifier = self.request.get('oauth_verifier', None)
 
     # Lookup the request token
@@ -130,6 +156,11 @@ class CallbackHandler(webapp2.RequestHandler):
     logging.info('generated feed URL: %s', atom_url)
     self.response.out.write(template.render(GENERATED_TEMPLATE_FILE,
                                             {'atom_url': atom_url}))
+
+
+def actor_name(actor):
+  return actor.get('displayName') or actor.get('username') or 'you'
+
 
 class AtomHandler(webapp2.RequestHandler):
   """Proxies the Atom feed for a Twitter user's stream.
@@ -164,24 +195,18 @@ class AtomHandler(webapp2.RequestHandler):
       return
 
     # New style feed with user-provided app (consumer) key and secret
-    consumer_key = get_required_query_param(self.request, 'consumer_key')
-    consumer_secret = get_required_query_param(self.request, 'consumer_secret')
-
-    tw = twitter.Twitter(self)
-    actor = tw.get_actor(app_key=consumer_key, app_secret=consumer_secret)
+    tw = twitter.Twitter(None, None)
+    actor = tw.user_to_actor(json.loads(signed_urlfetch(self, API_CURRENT_USER_URL)))
 
     list_str = self.request.get('list')
     if list_str:
       if list_str.startswith('@'):
         list_str = list_str[1:]
-      # Twitter.urlfetch passes through access_token_key and access_token_secret
-      resp = tw.urlfetch(API_LIST_TIMELINE_URL % tuple(list_str.split('/')),
-                         app_key=consumer_key, app_secret=consumer_secret)
+      resp = signed_urlfetch(self, API_LIST_TIMELINE_URL % tuple(list_str.split('/')))
       title = 'Twitter list %s' % list_str
     else:
-      resp = tw.urlfetch(twitter.API_TIMELINE_URL % TWEET_COUNT,
-                         app_key=consumer_key, app_secret=consumer_secret)
-      title = 'Twitter stream for %s' % actor['displayName']
+      resp = signed_urlfetch(self, twitter.API_TIMELINE_URL % TWEET_COUNT)
+      title = 'Twitter stream for %s' % actor_name(actor)
 
     activities = [tw.tweet_to_activity(t) for t in json.loads(resp)]
 

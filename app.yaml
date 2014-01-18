@@ -8,6 +8,8 @@ default_expiration: 1d
 libraries:
 - name: django
   version: 1.3
+- name: ssl
+  version: latest
 
 builtins:
 - remote_api: on
@@ -23,9 +25,11 @@ handlers:
 - url: /
   static_files: static/index.html
   upload: static/index.html
+  secure: always
 
 - url: /(generate|oauth_callback)
   script: main.application
+  secure: always
 
 - url: /atom
   script: main.application
@@ -36,7 +40,4 @@ skip_files:
 - ^(.*/)?.*/RCS/.*
 - ^(.*/)?\..*
 - ^(.*/)?.*\.bak$
-# don't need anything in the tweepy or webapp-improved subdirs, especially since
-# webapp-improved/lib/ has over 1k files!
-- activitystreams/tweepy_submodule/(docs|examples|tools)/.*
-- activitystreams/webutil/webapp-improved/.*/.*
+- ^(.*/)?(debian|doc|docs|pydocs|python3|ref|samples|tests)/.*
