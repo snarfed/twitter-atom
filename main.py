@@ -17,8 +17,8 @@ from webob import exc
 
 import appengine_config
 from activitystreams import twitter
-from activitystreams.oauth_dropins import tweepy
-from activitystreams.webutil import util
+from activitystreams.oauth_dropins.webutil import util
+import tweepy
 
 from google.appengine.api import urlfetch
 from google.appengine.ext import db

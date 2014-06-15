@@ -1,1 +1,1 @@
-activitystreams/webutil/appengine_config.py
+from activitystreams.appengine_config import *
