@@ -1,9 +1,5 @@
 """An App Engine app that provides "private" Atom feeds for your Twitter news
 feed, ie tweets from people you follow.
-
-Not yet ported to oauth-dropins because this needs to set the app (consumer) key
-and secret dynamically, which oauth-dropins.twitter doesn't yet support and
-isn't quite trivial to add.
 """
 
 __author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
