@@ -75,7 +75,7 @@ don't mind if you use your own app to do it just for yourself, though.
      src="/static/twitter_app_oauth_settings.png" /> <!-- height 200 -->
 </div>
 
-<form method="get" action="/generate"
+<form method="post" action="/generate"
       onsubmit="if (document.getElementById('consumer_key').value.trim() == '' ||
                     document.getElementById('consumer_secret').value.trim() == '') {
                   window.alert('You must enter a consumer key and secret.');

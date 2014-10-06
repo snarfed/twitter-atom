@@ -4,121 +4,53 @@ feed, ie tweets from people you follow.
 
 __author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
 
-import json
 import logging
 import os
 import urllib
-import urlparse
-from webob import exc
 
 import appengine_config
 from activitystreams import atom
 from activitystreams import twitter
+from activitystreams.oauth_dropins import twitter as oauth_twitter
 from activitystreams.oauth_dropins.webutil import util
-import tweepy
 
-from google.appengine.api import urlfetch
-from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 import webapp2
 
 
-GENERATED_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
-                                       'templates', 'generated.html')
-
-# based on salmon-unofficial/twitter.py.
-OAUTH_CALLBACK = '%s://%s/oauth_callback?list=%%s' % (appengine_config.SCHEME,
-                                                      appengine_config.HOST)
-
-
-class OAuthToken(db.Model):
-  """Datastore model class for an OAuth token.
-  """
-  token_key = db.StringProperty(required=True)
-  token_secret = db.StringProperty(required=True)
-  consumer_key = db.StringProperty(required=True)
-  consumer_secret = db.StringProperty(required=True)
-
-
 class GenerateHandler(webapp2.RequestHandler):
-  """Starts three-legged OAuth with Twitter.
-
-  Fetches an OAuth request token, then redirects to Twitter's auth page to
-  request an access token.
+  """Custom OAuth start handler so we can include consumer key in the callback.
   """
-  def get(self):
-    list_str = self.request.get('list')
-    if list_str:
-      # does this list exist?
-      # nevermind, this fails on private lists.
-      # resp = urlfetch.fetch(LIST_URL % list_str, method='HEAD', deadline=999)
-      # if resp.status_code == 404:
-      #   self.abort(404, 'Twitter list not found: %s' % list_str)
-      # elif resp.status_code != 200:
-      #   self.abort(resp.status_code, 'Error looking up Twitter list %s:\n%s' %
-      #              (list_str, resp.content))
-      pass
-
-    consumer_key = str(util.get_required_param(self, 'consumer_key'))
-    consumer_secret = str(util.get_required_param(self, 'consumer_secret'))
-
-    try:
-      auth = tweepy.OAuthHandler(consumer_key, consumer_secret,
-                                 OAUTH_CALLBACK % list_str)
-      auth_url = auth.get_authorization_url()
-    except tweepy.TweepError, e:
-      msg = 'Could not create Twitter OAuth request token: '
-      logging.exception(msg)
-      raise exc.HTTPInternalServerError(msg + `e`)
-
-    # store the request token for later use in the callback handler
-    OAuthToken(token_key=auth.request_token['oauth_token'],
-               token_secret=auth.request_token['oauth_token_secret'],
-               consumer_key=consumer_key,
-               consumer_secret=consumer_secret,
-               ).put()
-    logging.info('Generated request token, redirecting to Twitter: %s', auth_url)
-    self.redirect(str(auth_url))
+  def post(self):
+    url = '/oauth_callback?%s' % urllib.urlencode({
+        'list': self.request.get('list', ''),
+        'consumer_key': util.get_required_param(self, 'consumer_key'),
+        'consumer_secret': util.get_required_param(self, 'consumer_secret'),
+        })
+    handler = oauth_twitter.StartHandler.to(url)(self.request, self.response)
+    return handler.post()
 
 
-class CallbackHandler(webapp2.RequestHandler):
-  """The OAuth callback. Fetches an access token and redirects to the front page.
-  """
+class CallbackHandler(oauth_twitter.CallbackHandler):
+  """The OAuth callback. Generates a new feed URL."""
 
-  def get(self):
-    oauth_token = util.get_required_param(self, 'oauth_token')
-    oauth_verifier = self.request.get('oauth_verifier', None)
+  def finish(self, auth_entity, state=None):
+    if not auth_entity:
+      logging.info('User declined Twitter auth prompt')
+      return self.redirect('/')
 
-    # Lookup the request token
-    request_token = OAuthToken.gql('WHERE token_key=:key', key=oauth_token).get()
-    if request_token is None:
-      raise exc.HTTPBadRequest('Invalid oauth_token: %s' % oauth_token)
-
-    # Rebuild the auth handler
-    auth = tweepy.OAuthHandler(request_token.consumer_key,
-                               request_token.consumer_secret)
-    auth.request_token = {'oauth_token': request_token.token_key,
-                          'oauth_token_secret': request_token.token_secret}
-
-    # Fetch the access token
-    try:
-      access_token_key, access_token_secret = auth.get_access_token(oauth_verifier)
-    except tweepy.TweepError, e:
-      msg = 'Twitter OAuth error, could not get access token: '
-      logging.exception(msg)
-      raise exc.HTTPInternalServerError(msg + `e`)
-
-    atom_url = '%s/atom?list=%s&access_token_key=%s&access_token_secret=%s&consumer_key=%s&consumer_secret=%s' % (
-      self.request.host_url, self.request.get('list'),
-      access_token_key, access_token_secret,
-      request_token.consumer_key, request_token.consumer_secret)
+    token_key, token_secret = auth_entity.access_token()
+    atom_url = self.request.host_url + '/atom?' + urllib.urlencode({
+        'consumer_key': util.get_required_param(self, 'consumer_key'),
+        'consumer_secret': util.get_required_param(self, 'consumer_secret'),
+        'access_token_key': token_key,
+        'access_token_secret': token_secret,
+        'list': self.request.get('list', ''),
+        })
     logging.info('generated feed URL: %s', atom_url)
-    self.response.out.write(template.render(GENERATED_TEMPLATE_FILE,
-                                            {'atom_url': atom_url}))
-
-
-def actor_name(actor):
-  return actor.get('displayName') or actor.get('username') or 'you'
+    self.response.out.write(template.render(
+        os.path.join(os.path.dirname(__file__), 'templates', 'generated.html'),
+        {'atom_url': atom_url}))
 
 
 class AtomHandler(webapp2.RequestHandler):
@@ -169,7 +101,8 @@ class AtomHandler(webapp2.RequestHandler):
     else:
       actor = tw.get_actor()
       activities = tw.get_activities()
-      title = 'Twitter stream for %s' % actor_name(actor)
+      title = ('Twitter stream for %s' %
+               actor.get('displayName') or actor.get('username') or 'you')
 
     self.response.out.write(atom.activities_to_atom(
         activities, actor, host_url=self.request.host_url + '/',
