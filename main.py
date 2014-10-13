@@ -97,15 +97,13 @@ class AtomHandler(webapp2.RequestHandler):
       user_id, group_id = list_str.split('/')
       actor = tw.get_actor(user_id)
       activities = tw.get_activities(user_id=user_id, group_id=group_id)
-      title = 'Twitter list %s' % list_str
     else:
       actor = tw.get_actor()
       activities = tw.get_activities()
-      title = ('Twitter stream for %s' %
-               actor.get('displayName') or actor.get('username') or 'you')
 
+    title = 'twitter-atom feed for %s' % (list_str or actor.get('username', ''))
     self.response.out.write(atom.activities_to_atom(
-        activities, actor, host_url=self.request.host_url + '/',
+        activities, actor, title=title, host_url=self.request.host_url + '/',
         request_url=self.request.path_url))
 
 
