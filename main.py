@@ -96,10 +96,10 @@ class AtomHandler(webapp2.RequestHandler):
         list_str = list_str[1:]
       user_id, group_id = list_str.split('/')
       actor = tw.get_actor(user_id)
-      activities = tw.get_activities(user_id=user_id, group_id=group_id)
+      activities = tw.get_activities(user_id=user_id, group_id=group_id, count=50)
     else:
       actor = tw.get_actor()
-      activities = tw.get_activities()
+      activities = tw.get_activities(count=50)
 
     title = 'twitter-atom feed for %s' % (list_str or actor.get('username', ''))
     self.response.out.write(atom.activities_to_atom(
