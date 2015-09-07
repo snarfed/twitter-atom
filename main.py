@@ -6,6 +6,7 @@ __author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
 
 import logging
 import os
+import re
 import urllib
 
 import appengine_config
@@ -61,6 +62,7 @@ class AtomHandler(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = 'application/atom+xml'
 
+    # New style feed with user-provided app (consumer) key and secret
     if (not self.request.get('consumer_key') and
         not self.request.get('consumer_secret')):
       # Welcome back message for old feeds
@@ -86,15 +88,16 @@ class AtomHandler(webapp2.RequestHandler):
 """)
       return
 
-    # New style feed with user-provided app (consumer) key and secret
     tw = twitter.Twitter(util.get_required_param(self, 'access_token_key'),
                          util.get_required_param(self, 'access_token_secret'))
 
     list_str = self.request.get('list')
     if list_str:
-      if list_str.startswith('@'):
-        list_str = list_str[1:]
-      user_id, group_id = list_str.split('/')
+      # this pattern is duplicated in index.html
+      match = re.match(r'@?([A-Za-z0-9_]+)/([A-Za-z0-9_]+)', list_str)
+      if not match:
+        self.abort(400, 'List must be of the form username/list (got %r)' % list_str)
+      user_id, group_id = match.groups()
       actor = tw.get_actor(user_id)
       activities = tw.get_activities(user_id=user_id, group_id=group_id, count=50)
     else:

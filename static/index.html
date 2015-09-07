@@ -1,7 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <title>Twitter Atom feeds</title>
@@ -75,26 +73,22 @@ don't mind if you use your own app to do it just for yourself, though.
      src="/static/twitter_app_oauth_settings.png" /> <!-- height 200 -->
 </div>
 
-<form method="post" action="/generate"
-      onsubmit="if (document.getElementById('consumer_key').value.trim() == '' ||
-                    document.getElementById('consumer_secret').value.trim() == '') {
-                  window.alert('You must enter a consumer key and secret.');
-                  return false;
-                }">
+<form method="post" action="/generate">
 
 <table id="consumer">
 <tr><td class="label">
 <label for="consumer_key">Consumer key</label>
 </td><td>
-<input type="text" id="consumer_key" name="consumer_key" />
+<input type="text" id="consumer_key" name="consumer_key" required />
 </td></tr><tr><td class="label">
 <label for="consumer_secret">Consumer secret</label>
 </td><td>
-<input type="text" id="consumer_secret" name="consumer_secret" />
+<input type="text" id="consumer_secret" name="consumer_secret" required />
 </td></tr></table>
 
 <br /><br />
-<p>Second, choose either your full stream or just the people on a list.</p>
+<p>Second, choose either your full stream or just the people on a list. For a
+  list, use the format <code>username/list</code>.</p>
 
 <table id="buttons">
 <tr><td rowspan="2">
@@ -104,22 +98,14 @@ don't mind if you use your own app to do it just for yourself, though.
 </td><td rowspan="2">
 OR
 </td><td>
-  <input type="text" id="list" name="list" value="e.g. twitter/team"
-   onfocus="if (this.value == 'e.g. twitter/team') {this.value = '';} this.style.color = 'black';"
-   onblur="if (this.value == '') {this.value = 'e.g. twitter/team'; this.style.color = 'gray';}" />
+  <!-- pattern is duplicated in main.py -->
+  <input type="text" id="list" name="list" placeholder="username/list"
+         pattern="@?[A-Za-z0-9_]+/[A-Za-z0-9_]+" />
 
 </td></tr>
 <tr><td>
   <input type="image" alt="Get this list's feed"
-         src="/static/twitter_get_list_feed.png"
-         onclick="
-value = document.getElementById('list').value;
-parts = value.split('/');
-if (value == 'e.g. twitter/team' || parts.length != 2 || !parts[0] || !parts[1] ||
-    !parts[0].match('^[A-Za-z0-9_@]+$')) {
-  window.alert('List must be of the form username/list.');
-  return false;
-}" />
+         src="/static/twitter_get_list_feed.png" />
 </td></tr>
 </table>
 </form>
