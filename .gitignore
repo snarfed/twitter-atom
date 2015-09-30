@@ -1,5 +1,6 @@
 access_token_whitelist
 datastore.dat
+/local
 oauth_client_secret
 plus-dogfood.json
 private_notes

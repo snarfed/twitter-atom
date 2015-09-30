@@ -10,10 +10,9 @@ import re
 import urllib
 
 import appengine_config
-from activitystreams import atom
-from activitystreams import twitter
-from activitystreams.oauth_dropins import twitter as oauth_twitter
-from activitystreams.oauth_dropins.webutil import util
+from granary import atom, twitter
+from oauth_dropins import twitter as oauth_twitter
+from oauth_dropins.webutil import util
 
 from google.appengine.ext.webapp import template
 import webapp2
@@ -69,8 +68,7 @@ class AtomHandler(webapp2.RequestHandler):
       self.response.out.write("""\
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
-<generator uri="https://github.com/snarfed/activitystreams-unofficial" version="0.1">
-  activitystreams-unofficial</generator>
+<generator uri="https://twitter-atom.appspot.com/" version="0.1">twitter-atom</generator>
 <id>%s</id>
 <title>Twitter Atom feeds is back!</title>
 <updated>2013-07-08T20:00:00</updated>
@@ -115,4 +113,4 @@ application = webapp2.WSGIApplication(
    ('/oauth_callback', CallbackHandler),
    ('/atom', AtomHandler),
    ],
-  debug=appengine_config.DEBUG)
+  debug=False)
