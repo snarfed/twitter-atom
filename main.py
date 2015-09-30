@@ -18,6 +18,11 @@ from google.appengine.ext.webapp import template
 import webapp2
 
 
+# Wrap webutil.util.tag_uri and hard-code the year this project started, 2013.
+_orig_tag_uri = util.tag_uri
+util.tag_uri = lambda domain, name: _orig_tag_uri(domain, name, year=2013)
+
+
 class GenerateHandler(webapp2.RequestHandler):
   """Custom OAuth start handler so we can include consumer key in the callback.
   """
