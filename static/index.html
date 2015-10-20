@@ -98,9 +98,13 @@ don't mind if you use your own app to do it just for yourself, though.
 </td><td rowspan="2">
 OR
 </td><td>
-  <!-- pattern is duplicated in main.py -->
+  <!-- pattern is duplicated in main.py
+    -- also note that list names allow more characters that usernames, but the
+    -- allowed characters aren't explicitly documented. :/ details:
+    -- https://groups.google.com/d/topic/twitter-development-talk/lULdIVR3B9s/discussion
+    -->
   <input type="text" id="list" name="list" placeholder="username/list"
-         pattern="@?[A-Za-z0-9_]+/[A-Za-z0-9_]+" />
+         pattern="@?[A-Za-z0-9_]+/[A-Za-z0-9_-]+" />
 
 </td></tr>
 <tr><td>

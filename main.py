@@ -12,6 +12,7 @@ import urllib
 import appengine_config
 from granary import atom, twitter
 from oauth_dropins import twitter as oauth_twitter
+from oauth_dropins.webutil import handlers
 from oauth_dropins.webutil import util
 
 from google.appengine.ext.webapp import template
@@ -26,6 +27,8 @@ util.tag_uri = lambda domain, name: _orig_tag_uri(domain, name, year=2013)
 class GenerateHandler(webapp2.RequestHandler):
   """Custom OAuth start handler so we can include consumer key in the callback.
   """
+  handle_exception = handlers.handle_exception
+
   def post(self):
     url = '/oauth_callback?%s' % urllib.urlencode({
         'list': self.request.get('list', ''),
@@ -38,6 +41,7 @@ class GenerateHandler(webapp2.RequestHandler):
 
 class CallbackHandler(oauth_twitter.CallbackHandler):
   """The OAuth callback. Generates a new feed URL."""
+  handle_exception = handlers.handle_exception
 
   def finish(self, auth_entity, state=None):
     if not auth_entity:
@@ -63,6 +67,8 @@ class AtomHandler(webapp2.RequestHandler):
 
   Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
+  handle_exception = handlers.handle_exception
+
   def get(self):
     self.response.headers['Content-Type'] = 'application/atom+xml'
 
@@ -96,8 +102,11 @@ class AtomHandler(webapp2.RequestHandler):
 
     list_str = self.request.get('list')
     if list_str:
-      # this pattern is duplicated in index.html
-      match = re.match(r'@?([A-Za-z0-9_]+)/([A-Za-z0-9_]+)', list_str)
+      # this pattern is duplicated in index.html.
+      # also note that list names allow more characters that usernames, but the
+      # allowed characters aren't explicitly documented. :/ details:
+      # https://groups.google.com/d/topic/twitter-development-talk/lULdIVR3B9s/discussion
+      match = re.match(r'@?([A-Za-z0-9_]+)/([A-Za-z0-9_-]+)', list_str)
       if not match:
         self.abort(400, 'List must be of the form username/list (got %r)' % list_str)
       user_id, group_id = match.groups()
