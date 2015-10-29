@@ -80,7 +80,7 @@ class AtomHandler(webapp2.RequestHandler):
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
 <generator uri="https://twitter-atom.appspot.com/" version="0.1">twitter-atom</generator>
-<id>%s</id>
+<id>https://twitter-atom.appspot.com/</id>
 <title>Twitter Atom feeds is back!</title>
 <updated>2013-07-08T20:00:00</updated>
 <entry>
