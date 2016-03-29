@@ -119,7 +119,7 @@ class AtomHandler(webapp2.RequestHandler):
     title = 'twitter-atom feed for %s' % (list_str or actor.get('username', ''))
     self.response.out.write(atom.activities_to_atom(
         activities, actor, title=title, host_url=self.request.host_url + '/',
-        request_url=self.request.path_url))
+        request_url=self.request.path_url, xml_base='https://twitter.com/'))
 
 
 application = webapp2.WSGIApplication(
