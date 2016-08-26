@@ -31,7 +31,7 @@ class GenerateHandler(webapp2.RequestHandler):
 
   def post(self):
     url = '/oauth_callback?%s' % urllib.urlencode({
-        'list': self.request.get('list', ''),
+        'list': self.request.get('list', '').encode('utf-8'),
         'consumer_key': util.get_required_param(self, 'consumer_key'),
         'consumer_secret': util.get_required_param(self, 'consumer_secret'),
         })
@@ -54,7 +54,7 @@ class CallbackHandler(oauth_twitter.CallbackHandler):
         'consumer_secret': util.get_required_param(self, 'consumer_secret'),
         'access_token_key': token_key,
         'access_token_secret': token_secret,
-        'list': self.request.get('list', ''),
+        'list': self.request.get('list', '').encode('utf-8'),
         })
     logging.info('generated feed URL: %s', atom_url)
     self.response.out.write(template.render(
