@@ -38,6 +38,7 @@ handlers:
   http_headers:
     Access-Control-Allow-Origin: "*"
     Content-Security-Policy: "script-src https: localhost:8080 'unsafe-inline'; report-uri /csp-report;"
+    Strict-Transport-Security: "max-age=16070400; includeSubDomains; preload"
     X-Content-Type-Options: "nosniff"
     X-Frame-Options: "SAMEORIGIN"
     X-XSS-Protection: "1; mode=block"
