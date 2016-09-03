@@ -35,6 +35,12 @@ handlers:
   static_files: static/index.html
   upload: static/index.html
   secure: always
+  http_headers:
+    Access-Control-Allow-Origin: "*"
+    Content-Security-Policy: "script-src https: localhost:8080 'unsafe-inline'; report-uri /csp-report;"
+    X-Content-Type-Options: "nosniff"
+    X-Frame-Options: "SAMEORIGIN"
+    X-XSS-Protection: "1; mode=block"
 
 - url: /(generate|oauth_callback)
   script: main.application

@@ -39,7 +39,7 @@ class GenerateHandler(webapp2.RequestHandler):
     return handler.post()
 
 
-class CallbackHandler(oauth_twitter.CallbackHandler):
+class CallbackHandler(oauth_twitter.CallbackHandler, handlers.ModernHandler):
   """The OAuth callback. Generates a new feed URL."""
   handle_exception = handlers.handle_exception
 
@@ -62,7 +62,7 @@ class CallbackHandler(oauth_twitter.CallbackHandler):
         {'atom_url': atom_url}))
 
 
-class AtomHandler(webapp2.RequestHandler):
+class AtomHandler(handlers.ModernHandler):
   """Proxies the Atom feed for a Twitter user's stream.
 
   Authenticates to the Twitter API with the user's stored OAuth credentials.
