@@ -11,11 +11,10 @@ import urllib
 
 import appengine_config
 from granary import atom, twitter
+import jinja2
 from oauth_dropins import twitter as oauth_twitter
 from oauth_dropins.webutil import handlers
 from oauth_dropins.webutil import util
-
-from google.appengine.ext.webapp import template
 import webapp2
 
 
@@ -57,9 +56,9 @@ class CallbackHandler(oauth_twitter.CallbackHandler, handlers.ModernHandler):
         'list': self.request.get('list', '').encode('utf-8'),
         })
     logging.info('generated feed URL: %s', atom_url)
-    self.response.out.write(template.render(
-        os.path.join(os.path.dirname(__file__), 'templates', 'generated.html'),
-        {'atom_url': atom_url}))
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(('.')), autoescape=True)
+    self.response.out.write(env.get_template('templates/generated.html').render(
+      {'atom_url': atom_url}))
 
 
 class AtomHandler(handlers.ModernHandler):

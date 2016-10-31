@@ -11,8 +11,8 @@ automatic_scaling:
   max_concurrent_requests: 12
 
 libraries:
-- name: django
-  version: 1.3
+- name: jinja2
+  version: latest
 - name: ssl
   version: latest
 
