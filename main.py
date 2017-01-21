@@ -4,6 +4,7 @@ feed, ie tweets from people you follow.
 
 __author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
 
+import datetime
 import logging
 import os
 import re
@@ -17,6 +18,7 @@ from oauth_dropins.webutil import handlers
 from oauth_dropins.webutil import util
 import webapp2
 
+CACHE_EXPIRATION = datetime.timedelta(minutes=5)
 
 # Wrap webutil.util.tag_uri and hard-code the year this project started, 2013.
 _orig_tag_uri = util.tag_uri
@@ -68,6 +70,7 @@ class AtomHandler(handlers.ModernHandler):
   """
   handle_exception = handlers.handle_exception
 
+  @handlers.memcache_response(CACHE_EXPIRATION)
   def get(self):
     self.response.headers['Content-Type'] = 'application/atom+xml'
 
