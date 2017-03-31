@@ -1,4 +1,4 @@
 blacklist:
 
 - subnet: 86.166.220.252
-  description: >1qps of same URL since 2016-03-16 ~2pm. list tonysss13/financial, user agent RSSOwl/2.2.1.201312301314
+  description: ">1qps of same URL since 2016-03-16 ~2pm. list tonysss13/financial, user agent RSSOwl/2.2.1.201312301314"
