@@ -127,7 +127,7 @@ class AtomHandler(handlers.ModernHandler):
         activities, actor, title=title, host_url=self.request.host_url + '/',
         request_url=self.request.path_url, xml_base='https://twitter.com/'))
     except DeadlineExceededError:
-      logging.exception('Hit 60s overall request deadline, returning 503.')
+      logging.warning('Hit 60s overall request deadline, returning 503.', exc_info=True)
       raise exc.HTTPServiceUnavailable()
 
 
