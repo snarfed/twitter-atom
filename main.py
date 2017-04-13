@@ -10,6 +10,8 @@ import os
 import re
 import urllib
 
+from google.appengine.runtime import DeadlineExceededError
+
 import appengine_config
 from granary import atom, twitter
 import jinja2
@@ -17,6 +19,7 @@ from oauth_dropins import twitter as oauth_twitter
 from oauth_dropins.webutil import handlers
 from oauth_dropins.webutil import util
 import webapp2
+from webob import exc
 
 CACHE_EXPIRATION = datetime.timedelta(minutes=5)
 
@@ -119,9 +122,13 @@ class AtomHandler(handlers.ModernHandler):
       activities = tw.get_activities(count=50)
 
     title = 'twitter-atom feed for %s' % (list_str or actor.get('username', ''))
-    self.response.out.write(atom.activities_to_atom(
+    try:
+      self.response.out.write(atom.activities_to_atom(
         activities, actor, title=title, host_url=self.request.host_url + '/',
         request_url=self.request.path_url, xml_base='https://twitter.com/'))
+    except DeadlineExceededError:
+      logging.exception('Hit 60s overall request deadline, returning 503.')
+      raise exc.HTTPServiceUnavailable()
 
 
 application = webapp2.WSGIApplication(
