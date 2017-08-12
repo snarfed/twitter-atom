@@ -107,6 +107,9 @@ class AtomHandler(handlers.ModernHandler):
 
     list_str = self.request.get('list')
     if list_str:
+      if list_str == 'tonysss13/financial':
+        raise exc.HTTPTooManyRequests("Please reduce your feed reader's polling rate.")
+
       # this pattern is duplicated in index.html.
       # also note that list names allow more characters that usernames, but the
       # allowed characters aren't explicitly documented. :/ details:
