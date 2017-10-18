@@ -1,9 +1,10 @@
 blacklist:
 
 - subnet: 86.166.220.252
-  description: ">1qps of same URL since 2016-03-16 ~2pm. list tonysss13/financial, user agent RSSOwl/2.2.1.201312301314"
+  description: ">1qps of same URL since 2016-03-16 ~2pm. list tonysss13/financial, user agent RSSOwl/2.2.1.201312301314 . https://github.com/snarfed/twitter-atom/issues/7"
 - subnet: 81.159.242.237
-  description: ">1qps for list tonysss13/financial, started 7/25/2017. https://github.com/snarfed/twitter-atom/issues/7"
-- subnet: 86.141.238.132
   description: "ditto"
-
+- subnet: 86.141.238.0/24
+  description: "ditto"
+- subnet: 86.144.174.0/24
+  description: "ditto"
