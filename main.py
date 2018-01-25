@@ -71,12 +71,24 @@ class AtomHandler(handlers.ModernHandler):
 
   Authenticates to the Twitter API with the user's stored OAuth credentials.
   """
-  handle_exception = handlers.handle_exception
+  def handle_exception(self, e, debug):
+    code, text = util.interpret_http_exception(e)
+    if code in ('401', '403'):
+      self.response.headers['Content-Type'] = 'application/atom+xml'
+      host_url = self.request.host_url + '/'
+      self.response.out.write(atom.activities_to_atom([{
+        'object': {
+          'url': self.request.url,
+          'content': 'Your twitter-atom login isn\'t working. <a href="%s">Click here to regenerate your feed!</a>' % host_url,
+          },
+        }], {}, title='facebook-atom', host_url=host_url,
+        request_url=self.request.path_url))
+    else:
+      raise e
 
   @handlers.memcache_response(CACHE_EXPIRATION)
   def get(self):
     self.response.headers['Content-Type'] = 'application/atom+xml'
-
     tw = twitter.Twitter(util.get_required_param(self, 'access_token_key'),
                          util.get_required_param(self, 'access_token_secret'))
 
