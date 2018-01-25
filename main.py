@@ -20,6 +20,7 @@ from oauth_dropins.webutil import handlers
 from oauth_dropins.webutil import util
 import webapp2
 from webob import exc
+from oauth_dropins.webutil import handlers
 
 CACHE_EXPIRATION = datetime.timedelta(minutes=5)
 
@@ -83,8 +84,9 @@ class AtomHandler(handlers.ModernHandler):
           },
         }], {}, title='facebook-atom', host_url=host_url,
         request_url=self.request.path_url))
-    else:
-      raise e
+      return
+
+    return handlers.handle_exception(self, e, debug)
 
   @handlers.memcache_response(CACHE_EXPIRATION)
   def get(self):
