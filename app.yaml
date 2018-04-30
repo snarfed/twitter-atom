@@ -7,6 +7,9 @@ threadsafe: true
 api_version: 1
 default_expiration: 1d
 
+includes:
+  - local/lib/python2.7/site-packages/oauth_dropins/webutil/app.common.yaml
+
 # background: https://github.com/snarfed/bridgy/issues/578
 automatic_scaling:
   max_idle_instances: 1
@@ -19,9 +22,6 @@ libraries:
   version: latest
 - name: webob
   version: latest
-
-builtins:
-- remote_api: on
 
 handlers:
 - url: /static
@@ -54,11 +54,3 @@ handlers:
 - url: /atom
   script: main.application
   secure: always
-
-skip_files:
-- ^(.*/)?.*\.(c|cc|cpp|h|o|py[co]|so)$
-- ^(.*/)?.*/RCS/.*
-- ^(.*/)?\..*
-- ^(.*/)?.*\.bak$
-- ^(.*/)?(\.?coverage|debian|docs?|examples?|l|pydocs?|python3|ref|samples?|TAGS|tests?)/.*
-- ^local/lib/python2.7/site-packages/setuptools/script\ \(dev\)\.tmpl$
