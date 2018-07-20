@@ -22,7 +22,7 @@ import webapp2
 from webob import exc
 from oauth_dropins.webutil import handlers
 
-CACHE_EXPIRATION = datetime.timedelta(minutes=5)
+CACHE_EXPIRATION = datetime.timedelta(minutes=10)
 
 # Wrap webutil.util.tag_uri and hard-code the year this project started, 2013.
 _orig_tag_uri = util.tag_uri
