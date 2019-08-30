@@ -52,6 +52,6 @@ handlers:
   script: main.application
   secure: always
 
-- url: /atom
+- url: /(atom|html)
   script: main.application
   secure: always

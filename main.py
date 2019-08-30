@@ -13,7 +13,7 @@ import urllib
 from google.appengine.runtime import DeadlineExceededError
 
 import appengine_config
-from granary import atom, twitter
+from granary import atom, microformats2, twitter
 import jinja2
 from oauth_dropins import twitter as oauth_twitter
 from oauth_dropins.webutil import handlers
@@ -67,30 +67,32 @@ class CallbackHandler(oauth_twitter.CallbackHandler, handlers.ModernHandler):
       {'atom_url': atom_url}))
 
 
-class AtomHandler(handlers.ModernHandler):
-  """Proxies the Atom feed for a Twitter user's stream.
+class FeedHandler(handlers.ModernHandler):
+  """Base class for converting a Twitter user feed or list to Atom or HTML.
 
   Authenticates to the Twitter API with the user's stored OAuth credentials.
+
+  Attributes:
+    actor: AS1 object, current user
   """
   def handle_exception(self, e, debug):
+    if isinstance(e, DeadlineExceededError):
+      logging.warning('Hit 60s overall request deadline, returning 503.', exc_info=True)
+      raise exc.HTTPServiceUnavailable()
+
     code, text = util.interpret_http_exception(e)
     if code in ('401', '403'):
-      self.response.headers['Content-Type'] = 'application/atom+xml'
-      host_url = self.request.host_url + '/'
-      self.response.out.write(atom.activities_to_atom([{
+      return self.write_activities([{
         'object': {
           'url': self.request.url,
-          'content': 'Your twitter-atom login isn\'t working. <a href="%s">Click here to regenerate your feed!</a>' % host_url,
-          },
-        }], {}, title='facebook-atom', host_url=host_url,
-        request_url=self.request.path_url))
-      return
+          'content': 'Your twitter-atom login isn\'t working. <a href="%s">Click here to regenerate your feed!</a>' % self.request.host_url,
+        },
+      }])
 
     return handlers.handle_exception(self, e, debug)
 
   @handlers.memcache_response(CACHE_EXPIRATION)
   def get(self):
-    self.response.headers['Content-Type'] = 'application/atom+xml'
     tw = twitter.Twitter(util.get_required_param(self, 'access_token_key'),
                          util.get_required_param(self, 'access_token_secret'))
 
@@ -113,19 +115,40 @@ class AtomHandler(handlers.ModernHandler):
       actor = tw.get_actor()
       activities = tw.get_activities(count=50)
 
-    title = 'twitter-atom feed for %s' % (list_str or actor.get('username', ''))
-    try:
-      self.response.out.write(atom.activities_to_atom(
-        activities, actor, title=title, host_url=self.request.host_url + '/',
-        request_url=self.request.path_url, xml_base='https://twitter.com/'))
-    except DeadlineExceededError:
-      logging.warning('Hit 60s overall request deadline, returning 503.', exc_info=True)
-      raise exc.HTTPServiceUnavailable()
+    self.write_activities(activities, actor=actor)
+
+  def write_activities(self, activities, actor=None):
+    """Writes the given AS1 activities in the desired output format.
+
+    Args:
+      activities: sequence of AS1 activity dicts
+      actor: AS1 actor dict for the current user; optional
+    """
+    raise NotImplementedError()
+
+
+class AtomHandler(FeedHandler):
+  def write_activities(self, activities, actor=None):
+    title = 'twitter-atom'
+    if actor:
+      title += ' feed for %s' % (self.request.get('list') or actor.get('username', ''))
+
+    self.response.headers['Content-Type'] = 'application/atom+xml'
+    self.response.out.write(atom.activities_to_atom(
+      activities, actor or {}, title=title, host_url=self.request.host_url + '/',
+      request_url=self.request.path_url, xml_base='https://twitter.com/'))
+
+
+class HtmlHandler(FeedHandler):
+  def write_activities(self, activities, actor=None):
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.out.write(microformats2.activities_to_html(activities))
 
 
 application = webapp2.WSGIApplication(
   [('/generate', GenerateHandler),
    ('/oauth_callback', CallbackHandler),
    ('/atom', AtomHandler),
+   ('/html', HtmlHandler),
    ],
   debug=False)
