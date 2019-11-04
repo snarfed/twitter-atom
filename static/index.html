@@ -14,64 +14,12 @@
 </div>
 
 <div id="body">
-<p>Want an Atom feed of your
-<a href="https://support.twitter.com/articles/164083-what-is-a-timeline">Twitter
-stream</a>, or a
-<a href="https://support.twitter.com/articles/76460-how-to-use-twitter-lists">Twitter
-list</a>,
-that you can subscribe to and read in your favorite RSS feed reader?
-This site can provide one for you!</p>
 
-<script type="text/javascript">
-var timedHide = 0;
-function show(id, height) {
-  window.clearTimeout(timedHide);
-  var ids = ["ss-create-button", "ss-details", "ss-oauth-settings",
-             "ss-authorize", "why-app"];
-  ids.forEach(function (ssid) {
-    var elem = document.getElementById(ssid);
-    elem.height = (ssid == id) ? height : 0;
-    elem.style.opacity = (ssid == id) ? 1 : 0;
-  });
-}
-
-function hide() {
-  timedHide = window.setTimeout(function() { show(null, null); }, 1000 /* ms */);
-}
-</script>
+<p>Want an Atom feed of your <a href="https://support.twitter.com/articles/164083-what-is-a-timeline">Twitter stream</a>, or a <a href="https://support.twitter.com/articles/76460-how-to-use-twitter-lists">Twitter list</a>, that you can subscribe to and read in your favorite feed reader? This site can provide one for you!</p>
 
 <p>
-First, <a href="https://apps.twitter.com/app/new">click here to get a Twitter
-app key</a>. (<a onmouseover="show('why-app', 'auto')"
-onmouseout="hide()">Why?</a>) Enter
-<a onmouseover="show('ss-details', 491)" onmouseout="hide()">details like these</a>,
-click the
-<a onmouseover="show('ss-create-button', 144)" onmouseout="hide()">checkbox
- and button</a>,
-and copy and paste the
-<a onmouseover="show('ss-oauth-settings', 200)" onmouseout="hide()">consumer
- key and secret</a>
-below. Hover over these links for help.
+First, <a href="https://developer.twitter.com/en/apps">click here to get a Twitter app key</a>. (<a title="Twitter doesn't like it when apps reformat and republish tweets for many different users like this. They don't mind if you use your own app to do it just for yourself, though.">Why?</a>) Then, copy and paste the app (aka consumer) key and secret below.
 </p>
-
-<div class="screenshots">
-<p id="why-app" style="height: 0 !important"
-   onmouseover="if (this.style.opacity == 1) {
-                  show('why-app', 'auto');
-                }"
-   onmouseout="hide()">
-Twitter <a href="https://dev.twitter.com/terms/api-terms">doesn't like it</a>
-when apps reformat and republish tweets for many different users like this. They
-don't mind if you use your own app to do it just for yourself, though.
-</p>
-
-<img id="ss-create-button" width="296" height="0"
-     src="/static/twitter_app_create_button.png" /> <!-- height 144 -->
-<img id="ss-details" width="220" height="0"
-     src="/static/twitter_app_details.png" /> <!-- height 491 -->
-<img id="ss-oauth-settings" width="588" height="0"
-     src="/static/twitter_app_oauth_settings.png" /> <!-- height 200 -->
-</div>
 
 <form method="post" action="/generate">
 
@@ -114,15 +62,7 @@ OR
 </table>
 </form>
 
-<p> When you click one of these buttons, Twitter will ask you if your app should
-be allowed to read your Twitter stream.
-<a onmouseover="show('ss-authorize', 157)" onmouseout="hide()">Click <em>Authorize
-app</em></a> and you'll be redirected back here to get your new feed.</p>
-
-<div class="screenshots">
-<img id="ss-authorize" width="255" height="0"
-     src="/static/twitter_app_authorize.png" /> <!-- height 157 -->
-</div>
+<p> When you click one of these buttons, Twitter will ask you if your app should be allowed to read your Twitter stream. Click <em>Authorize app</em> and you'll be redirected back here to get your new feed.</p>
 
 <div id="bottom"></div>
 

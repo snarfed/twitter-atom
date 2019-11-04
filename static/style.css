@@ -43,21 +43,6 @@ body, input, textarea {
   -moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
 }
 
-.screenshots > * {
-  opacity: 0;
-
-  -moz-transition: width 1s, height 1s, opacity 1s;
-  -webkit-transition: width 1s, height 1s, opacity 1s;
-  -o-transition: width 1s, height 1s, opacity 1s;
-  transition: width 1s, height 1s, opacity 1s;
-
-  /* I wanted to use this to delay the fade out, but it affects the fade in too. */
-  /* -moz-transition-delay: 1s; */
-  /* -webkit-transition-delay: 1s; */
-  /* -o-transition-delay: 1s; */
-  /* transition-delay: 1s; */
-}
-
 table {
   margin-left: auto;
   margin-right: auto;
