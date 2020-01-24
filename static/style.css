@@ -13,6 +13,13 @@ body, input, textarea {
   font-size: medium;
 }
 
+.disabled {
+  color: gray;
+}
+.disabled a {
+  color: #c0d0ff;
+}
+
 .gray {
   background-color: lightgray;
 }
