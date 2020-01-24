@@ -1,34 +1,22 @@
-# https://cloud.google.com/appengine/docs/standard/python/config/appref
+# https://cloud.google.com/appengine/docs/standard/python3/config/appref
 
 # application: twitter-atom
-# version: 2
-runtime: python27
-threadsafe: true
-api_version: 1
-default_expiration: 1d
+runtime: python37
+# default_expiration: 1d
 
-includes:
-  - local/lib/python2.7/site-packages/oauth_dropins/webutil/app.common.yaml
+# https://cloud.google.com/appengine/docs/standard/python3/runtime#entrypoint_best_practices
+# https://docs.gunicorn.org/en/latest/settings.html#timeout
+entrypoint: gunicorn --workers 1 --threads 10 --timeout 60 -b :$PORT main:application
 
 # background: https://github.com/snarfed/bridgy/issues/578
 automatic_scaling:
-  max_idle_instances: 1
+  # max_idle_instances: 1
   max_concurrent_requests: 12
   max_pending_latency: 100ms  # default is 30
 
-libraries:
-- name: jinja2
-  version: latest
-- name: lxml
-  version: latest
-- name: ssl
-  version: latest
-- name: ujson
-  version: latest
-- name: webob
-  version: latest
-
 handlers:
+
+# static
 - url: /static
   static_dir: static
 
@@ -52,10 +40,7 @@ handlers:
     X-Frame-Options: "SAMEORIGIN"
     X-XSS-Protection: "1; mode=block"
 
-- url: /(generate|oauth_callback)
-  script: main.application
-  secure: always
-
-- url: /(atom|html)
-  script: main.application
+# dynamic
+- url: .*
+  script: auto
   secure: always

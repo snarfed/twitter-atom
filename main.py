@@ -1,26 +1,17 @@
 """An App Engine app that provides "private" Atom feeds for your Twitter news
 feed, ie tweets from people you follow.
 """
-
-__author__ = 'Ryan Barrett <twitter-atom@ryanb.org>'
-
 import datetime
 import logging
-import os
 import re
-import urllib
+from urllib.parse import urlencode
 
-from google.appengine.runtime import DeadlineExceededError
-
-import appengine_config
 from granary import atom, microformats2, twitter
 import jinja2
 from oauth_dropins import twitter as oauth_twitter
-from oauth_dropins.webutil import handlers
-from oauth_dropins.webutil import util
+from oauth_dropins.webutil import appengine_config, appengine_info, handlers, util
 import webapp2
 from webob import exc
-from oauth_dropins.webutil import handlers
 
 CACHE_EXPIRATION = datetime.timedelta(minutes=10)
 
@@ -35,7 +26,7 @@ class GenerateHandler(webapp2.RequestHandler):
   handle_exception = handlers.handle_exception
 
   def post(self):
-    url = '/oauth_callback?%s' % urllib.urlencode({
+    url = '/oauth_callback?%s' % urlencode({
         'list': self.request.get('list', '').encode('utf-8'),
         'consumer_key': util.get_required_param(self, 'consumer_key'),
         'consumer_secret': util.get_required_param(self, 'consumer_secret'),
@@ -54,7 +45,7 @@ class CallbackHandler(oauth_twitter.CallbackHandler, handlers.ModernHandler):
       return self.redirect('/')
 
     token_key, token_secret = auth_entity.access_token()
-    atom_url = self.request.host_url + '/atom?' + urllib.urlencode({
+    atom_url = self.request.host_url + '/atom?' + urlencode({
         'consumer_key': util.get_required_param(self, 'consumer_key'),
         'consumer_secret': util.get_required_param(self, 'consumer_secret'),
         'access_token_key': token_key,
@@ -76,10 +67,6 @@ class FeedHandler(handlers.ModernHandler):
     actor: AS1 object, current user
   """
   def handle_exception(self, e, debug):
-    if isinstance(e, DeadlineExceededError):
-      logging.warning('Hit 60s overall request deadline, returning 503.', exc_info=True)
-      raise exc.HTTPServiceUnavailable()
-
     code, text = util.interpret_http_exception(e)
     if code in ('401', '403'):
       return self.write_activities([{
@@ -91,7 +78,7 @@ class FeedHandler(handlers.ModernHandler):
 
     return handlers.handle_exception(self, e, debug)
 
-  @handlers.memcache_response(CACHE_EXPIRATION)
+  @handlers.cache_response(CACHE_EXPIRATION)
   def get(self):
     tw = twitter.Twitter(util.get_required_param(self, 'access_token_key'),
                          util.get_required_param(self, 'access_token_secret'))
@@ -145,10 +132,10 @@ class HtmlHandler(FeedHandler):
     self.response.out.write(microformats2.activities_to_html(activities))
 
 
-application = webapp2.WSGIApplication(
+application = handlers.ndb_context_middleware(webapp2.WSGIApplication(
   [('/generate', GenerateHandler),
    ('/oauth_callback', CallbackHandler),
    ('/atom', AtomHandler),
    ('/html', HtmlHandler),
    ],
-  debug=False)
+  debug=appengine_info.DEBUG), client=appengine_config.ndb_client)
