@@ -8,3 +8,5 @@ blacklist:
   description: "ditto"
 - subnet: 86.144.174.0/24
   description: "ditto"
+- subnet: 2a02:c7f:dc3c:8200::/64
+  description: "ditto"
