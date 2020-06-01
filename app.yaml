@@ -12,7 +12,9 @@ entrypoint: gunicorn --workers 1 --threads 10 --timeout 60 -b :$PORT main:applic
 automatic_scaling:
   # max_idle_instances: 1
   max_concurrent_requests: 12
-  max_pending_latency: 100ms  # default is 30
+  # max_pending_latency: 100ms  # default is 30ms
+  min_pending_latency: 2s  # default is 30ms
+  max_pending_latency: 5s  # default is 30ms
 
 handlers:
 
