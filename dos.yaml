@@ -10,3 +10,5 @@ blacklist:
   description: "ditto"
 - subnet: 2a02:c7f:dc3c:8200::/64
   description: "ditto"
+- subnet: 2a02:c7f:dc78:9d00::/64
+  description: "ditto"
