@@ -1,13 +1,6 @@
-access_token_whitelist
-datastore.dat
 /l
 /local*/
-oauth_client_secret
-plus-dogfood.json
 private_notes
-facebook_app_id
-facebook_app_secret
-facebook_app_id_local
-facebook_app_secret_local
+flask_secret_key
 twitter_app_key
 twitter_app_secret
