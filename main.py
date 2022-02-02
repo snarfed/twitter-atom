@@ -77,9 +77,13 @@ class Feed(View):
   def dispatch_request(self):
     tw = twitter.Twitter(request.args['access_token_key'],
                          request.args['access_token_secret'])
+    list_str = request.values.get('list')
+    kwargs = {
+      'count': 50,
+      'include_shares': request.values.get('retweets', '').lower() != 'false',
+    }
 
     try:
-      list_str = request.values.get('list')
       if list_str:
         # this pattern is duplicated in index.html.
         # also note that list names allow more characters that usernames, but the
@@ -90,10 +94,10 @@ class Feed(View):
           self.abort(400, 'List must be of the form username/list (got %r)' % list_str)
         user_id, group_id = match.groups()
         actor = tw.get_actor(user_id)
-        activities = tw.get_activities(user_id=user_id, group_id=group_id, count=50)
+        activities = tw.get_activities(user_id=user_id, group_id=group_id, **kwargs)
       else:
         actor = tw.get_actor()
-        activities = tw.get_activities(count=50)
+        activities = tw.get_activities(**kwargs)
 
     except BaseException as e:
       code, text = util.interpret_http_exception(e)
