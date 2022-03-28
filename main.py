@@ -35,6 +35,10 @@ app.wsgi_app = flask_util.ndb_context_middleware(
 cache = Cache(app)
 
 
+BLACKLISTED_USER_IDS = {
+  'Gearnine1',  # 2022-03-22, fetching 12 lists as often as once per minute
+}
+
 @app.route('/generate', methods=['POST'])
 def generate():
   """Custom OAuth start view so we can include consumer key in the callback."""
@@ -91,8 +95,10 @@ class Feed(View):
         # https://groups.google.com/d/topic/twitter-development-talk/lULdIVR3B9s/discussion
         match = re.match(r'@?([A-Za-z0-9_]+)/([A-Za-z0-9_-]+)', list_str)
         if not match:
-          self.abort(400, 'List must be of the form username/list (got %r)' % list_str)
+          return flask_util.error(f'List must be of the form username/list (got {list_str})')
         user_id, group_id = match.groups()
+        if user_id in BLACKLISTED_USER_IDS:
+          return flask_util.error('Too many requests. Please slow down!', status=429)
         actor = tw.get_actor(user_id)
         activities = tw.get_activities(user_id=user_id, group_id=group_id, **kwargs)
       else:
