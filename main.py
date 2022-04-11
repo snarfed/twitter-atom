@@ -36,7 +36,9 @@ cache = Cache(app)
 
 
 BLACKLISTED_USER_IDS = {
-  'Gearnine1',  # 2022-03-22, fetching 12 lists as often as once per minute
+  # 2022-03-22, fetching 12 lists as often as once per minute
+  # https://github.com/snarfed/twitter-atom/issues/14
+  # 'Gearnine1',
 }
 
 @app.route('/generate', methods=['POST'])
