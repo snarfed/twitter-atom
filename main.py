@@ -4,13 +4,14 @@ import logging
 import re
 from urllib.parse import urlencode
 
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request
 from flask.views import View
 from flask_caching import Cache
 import flask_gae_static
 from granary import atom, microformats2, twitter
 from oauth_dropins import twitter as oauth_twitter
 from oauth_dropins.webutil import appengine_config, appengine_info, flask_util, util
+from oauth_dropins.webutil.flask_util import flash
 
 CACHE_EXPIRATION = datetime.timedelta(minutes=15)
 
@@ -57,7 +58,7 @@ class Callback(oauth_twitter.Callback):
   def finish(self, auth_entity, state=None):
     if not auth_entity:
       logging.info('User declined Twitter auth prompt')
-      return self.redirect('/')
+      return redirect('/')
 
     token_key, token_secret = auth_entity.access_token()
     atom_url = request.host_url + 'atom?' + urlencode({
