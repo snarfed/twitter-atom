@@ -14,8 +14,10 @@ body, input, textarea {
 }
 
 .disabled {
+  display: none;
   color: gray;
 }
+
 .disabled a {
   color: #c0d0ff;
 }
