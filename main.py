@@ -20,7 +20,7 @@ _orig_tag_uri = util.tag_uri
 util.tag_uri = lambda domain, name: _orig_tag_uri(domain, name, year=2013)
 
 # Flask app
-app = Flask('twitter-atom')
+app = Flask('twitter-atom', static_folder=None)
 app.template_folder = './templates'
 app.config.from_mapping(
     ENV='development' if appengine_info.DEBUG else 'production',
