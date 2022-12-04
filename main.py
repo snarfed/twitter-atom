@@ -119,6 +119,7 @@ class Feed(View):
         }])
       raise
 
+    activities.sort(key=lambda a: (a.get('published'), a.get('id')), reverse=True)
     return self.write_activities(activities, actor=actor)
 
   def write_activities(self, activities, actor=None):
